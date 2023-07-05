@@ -1,6 +1,9 @@
+import re
+
 import feedparser
 import loguru
 import requests
+from dateutil import parser as dateparser
 
 logger = loguru.logger
 
@@ -13,12 +16,18 @@ def _raw_post_to_object(raw_post, feed_id) -> db.Post:
     except AttributeError:
         guid = raw_post.link
 
+    try:
+        summary = re.sub(r"<.*?>", "", raw_post.summary)
+    except AttributeError:
+        summary = ""
+    published = int(dateparser.parse(raw_post.published).timestamp())
     return db.Post(
         feed_id=feed_id,
         guid=guid,
         link=raw_post.link,
-        published=raw_post.published,
+        published=published,
         title=raw_post.title,
+        summary=summary,
     )
 
 

@@ -6,3 +6,4 @@ pyvenv.cfg
 .vscode/*
 __pycache__/*
 *.db
+webhook.txt

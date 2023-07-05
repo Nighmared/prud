@@ -1,11 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Iterable, Optional
 
 import requests
 from pydantic import BaseModel, root_validator
 
-from prud import config
+from prud import config, db
 
 
 class EmbedType(Enum):
@@ -62,10 +62,10 @@ class EmbedField(BaseModel):
 
 class Embed(BaseModel):
     title: Optional[str] = None
-    type: Optional[EmbedType] = None
+    type: Optional[str] = "rich"
     description: Optional[str] = None
     url: Optional[str] = None
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[str] = None
     color: Optional[int] = None
     footer: Optional[EmbedFooter] = None
     image: Optional[EmbedImage] = None
@@ -77,7 +77,7 @@ class Embed(BaseModel):
 
 
 class WebhookObject(BaseModel):
-    content: Optional[str]
+    content: Optional[str] = None
     username: Optional[str] = config.discord_username
     avatar_url: Optional[str] = config.avatar_url
     embeds: Optional[list[Embed]] = []
@@ -93,5 +93,36 @@ class WebhookObject(BaseModel):
         return values
 
 
+def _value_cleaner(v):
+    if type(v) is dict:
+        res = _dict_cleaner(v)
+        if len(res) == 0:
+            return None
+        else:
+            return res
+    if type(v) is list:
+        res = _list_cleaner(v)
+        if len(res) == 0:
+            return None
+        return res
+    return v
+
+
+def _list_cleaner(v: Iterable):
+    return [_value_cleaner(e) for e in v]
+
+
+def _dict_cleaner(d: dict) -> dict:
+    new_dict = {}
+    for k, v in d.items():
+        new_v = _value_cleaner(v)
+        if new_v is None:
+            continue
+        new_dict[k] = new_v
+    return new_dict
+
+
 def send_to_webhook(content: WebhookObject):
-    requests.post(url=config.webhook_url, json=content.dict())
+    webhook_dict = content.dict()
+    fresh_webhook_dict = _dict_cleaner(webhook_dict)
+    res = requests.post(url=config.webhook_url, json=webhook_dict)
