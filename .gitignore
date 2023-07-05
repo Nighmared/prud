@@ -3,3 +3,6 @@ lib/*
 lib64
 include/*
 pyvenv.cfg
+.vscode/*
+__pycache__/*
+*.db
