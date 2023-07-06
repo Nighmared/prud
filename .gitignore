@@ -7,3 +7,5 @@ pyvenv.cfg
 __pycache__/*
 *.db
 webhook.txt
+.env
+*/__pycache__/*

@@ -1,4 +1,5 @@
 import re
+from html import unescape
 
 import feedparser
 import loguru
@@ -7,7 +8,8 @@ from dateutil import parser as dateparser
 
 logger = loguru.logger
 
-from prud import config, db
+from prud import db
+from prud.config import config
 
 
 def _raw_post_to_object(raw_post, feed_id) -> db.Post:
@@ -15,11 +17,12 @@ def _raw_post_to_object(raw_post, feed_id) -> db.Post:
         guid = raw_post.guid
     except AttributeError:
         guid = raw_post.link
-
     try:
         summary = re.sub(r"<.*?>", "", raw_post.summary)
     except AttributeError:
         summary = ""
+    # replace something like "&amp;" with the actual character which in that case would be "&"
+    summary = unescape(summary)
     published = int(dateparser.parse(raw_post.published).timestamp())
     return db.Post(
         feed_id=feed_id,

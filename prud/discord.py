@@ -5,7 +5,8 @@ from typing import Iterable, Optional
 import requests
 from pydantic import BaseModel, root_validator
 
-from prud import config, db
+from prud import db
+from prud.config import config
 
 
 class EmbedType(Enum):
@@ -75,8 +76,28 @@ class Embed(BaseModel):
     author: Optional[EmbedAuthor] = None
     fields: Optional[list[EmbedField]] = None
 
+    @staticmethod
+    def from_post(post: db.Post):
+        feed = db.get_feed_from_id(post.feed_id)
+        author = EmbedAuthor(name=feed.title, url=feed.url)
+        provider = EmbedProvider(name="nighmared", url="https://nighmared.tech")
+        footer = EmbedFooter(
+            text="<3",
+        )
+        published = datetime.fromtimestamp(post.published).isoformat()
+        embed = Embed(
+            title=post.title,
+            url=post.link,
+            description=post.summary[:200],
+            timestamp=published,
+            author=author,
+            provider=provider,
+            footer=footer,
+        )
+        return embed
 
-class WebhookObject(BaseModel):
+
+class WebhookPostObject(BaseModel):
     content: Optional[str] = None
     username: Optional[str] = config.discord_username
     avatar_url: Optional[str] = config.avatar_url
@@ -91,6 +112,18 @@ class WebhookObject(BaseModel):
         if content is None and embeds is None and file is None:
             raise ValueError("WebhookObject must have one of content,file,embeds")
         return values
+
+    @staticmethod
+    def from_post(post: db.Post) -> "WebhookPostObject":
+        embed = Embed.from_post(post)
+        webhook = WebhookPostObject(
+            username=config.discord_username,
+            avatar_url=config.avatar_url,
+            embeds=[
+                embed,
+            ],
+        )
+        return webhook
 
 
 def _value_cleaner(v):
@@ -122,7 +155,6 @@ def _dict_cleaner(d: dict) -> dict:
     return new_dict
 
 
-def send_to_webhook(content: WebhookObject):
+def send_to_webhook(content: WebhookPostObject):
     webhook_dict = content.dict()
-    fresh_webhook_dict = _dict_cleaner(webhook_dict)
-    res = requests.post(url=config.webhook_url, json=webhook_dict)
+    requests.post(url=config.webhook_url, json=webhook_dict)

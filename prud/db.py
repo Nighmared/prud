@@ -1,10 +1,9 @@
-from datetime import datetime
 from typing import Optional
 
 from loguru import logger
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-from prud import config, discord
+from prud.config import config
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -32,36 +31,7 @@ class Post(SQLModel, table=True):
     guid: str
     summary: str
     published: int
-
-    def _embed(self) -> discord.Embed:
-        feed = get_feed_from_id(self.feed_id)
-        author = discord.EmbedAuthor(name=feed.title, url=feed.url)
-        provider = discord.EmbedProvider(name="nighmared", url="https://nighmared.tech")
-        footer = discord.EmbedFooter(
-            text="<3",
-        )
-        published = datetime.fromtimestamp(self.published).isoformat()
-        embed = discord.Embed(
-            title=self.title,
-            url=self.link,
-            description=self.summary[:200],
-            timestamp=published,
-            author=author,
-            provider=provider,
-            footer=footer,
-        )
-        return embed
-
-    def webhook_object(self) -> discord.WebhookObject:
-        embed = self._embed()
-        webhook = discord.WebhookObject(
-            username=config.discord_username,
-            avatar_url=config.avatar_url,
-            embeds=[
-                embed,
-            ],
-        )
-        return webhook
+    handled: bool = False
 
 
 engine = create_engine(config.db_url)
@@ -80,10 +50,10 @@ def add_feeds(feeds: list[PolyRingFeed]):
         session.commit()
 
 
-def get_feed_from_id(feed_it: int) -> PolyRingFeed:
+def get_feed_from_id(feed_id: int) -> PolyRingFeed:
     with Session(engine) as session:
         feed = session.exec(
-            select(PolyRingFeed).where(PolyRingFeed.id == feed_it)
+            select(PolyRingFeed).where(PolyRingFeed.id == feed_id)
         ).one_or_none()
         if feed is None:
             logger.critical("Feed for post not found, where did the id come from?")
@@ -101,14 +71,31 @@ def add_post(post: Post):
 
 def add_posts(posts: list[Post]):
     with Session(engine) as session:
+        session.expire_on_commit = False
         session.add_all(posts)
+        session.commit()
+
+
+def handle_post(post: Post):
+    with Session(engine) as session:
+        db_post = session.exec(select(Post).where(Post.id == post.id)).one()
+        db_post.handled = True
+        session.commit()
+
+
+def _yeet_posts():
+    logger.critical("Yeeting all posts, MAKE SURE THIS IS NOT CALLED FOR PROD!!!")
+    with Session(engine) as session:
+        posts = session.exec(select(Post))
+        for p in posts:
+            session.delete(p)
         session.commit()
 
 
 def get_posts_from_feed_id(feed_id: int) -> list[Post]:
     with Session(engine) as session:
         posts = session.exec(select(Post).where(Post.feed_id == feed_id)).all()
-    return posts
+        return posts
 
 
 def disable_feed(feed: PolyRingFeed):
@@ -131,4 +118,4 @@ def get_feeds(only_enabled=False) -> list[PolyRingFeed]:
             ).all()
         else:
             feeds = session.exec(select(PolyRingFeed)).all()
-    return feeds
+        return feeds

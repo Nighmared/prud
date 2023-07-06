@@ -2,7 +2,8 @@ import loguru
 import requests
 from pydantic import parse_obj_as
 
-from prud import config, db, discord, feedutil
+from prud import db, feedutil
+from prud.config import config
 
 logger = loguru.logger
 
@@ -39,9 +40,9 @@ def update_db_feeds():
 def update_db_posts_and_get_new_posts() -> list[db.Post]:
     feeds = db.get_feeds(only_enabled=True)
     all_new_posts: list[db.Post] = []
-    for feed in feeds[:3]:
+    for feed in feeds:
         new_posts = _get_new_feed_posts(feed)
-        # db.add_posts(new_posts)
+        db.add_posts(new_posts)
         all_new_posts += new_posts
 
     logger.info(f"Got {len(all_new_posts)} new posts")
@@ -65,14 +66,10 @@ def _get_new_feed_posts(feed: db.PolyRingFeed) -> list[db.Post]:
 
     new_posts: list[db.Post] = []
     for post in online_posts:
-        if guid_to_db_post.get(post.guid) is None:
+        if (
+            guid_to_db_post.get(post.guid) is None
+            or not guid_to_db_post[post.guid].handled
+        ):
             new_posts.append(post)
 
     return new_posts
-
-
-update_db_feeds()
-
-new_posts = update_db_posts_and_get_new_posts()
-for p in new_posts[:5]:
-    discord.send_to_webhook(p.webhook_object())

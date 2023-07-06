@@ -1,0 +1,13 @@
+services:
+  prud:
+    image: nighmared/prud
+    build: .
+    restart: on-failure
+    environment:
+      - PRUD_WEBHOOK_URL=${WEBHOOK_URL}
+      - PRUD_OLDEST_POST_TO_SEND_TS=1686296861
+    volumes:
+      - prud_data:/data
+
+volumes:
+  prud_data:

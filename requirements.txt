@@ -2,4 +2,4 @@ sqlmodel
 feedparser
 loguru
 python-dateutil
-
+requests
