@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Feed, readFeeds } from "@/util/prud";
 import FeedContainer from "@/components/FeedContainer";
 import FeedList from "@/components/FeedList";
+import { AppBar, Container, Typography } from "@mui/material";
+import TitleBar from "@/components/titlebar";
 
 const App = () => {
     const [feeds, setFeeds] = useState<Feed[]>([])
@@ -12,11 +14,11 @@ const App = () => {
 
     return (
         <main>
-            < h1 > Hello!</h1 >
-            <div>
+            <TitleBar title="PolyRing" />
+            <Container>
                 <FeedList feeds={feeds} />
-            </div>
-        </main>
+            </Container>
+        </main >
     )
 }
 

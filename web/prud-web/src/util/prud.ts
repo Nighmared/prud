@@ -16,7 +16,7 @@ export type Post = {
     title: string;
     link: string;
     summary: string;
-    published: Number;
+    published: number;
 }
 
 export type ReadPostsResponse = {

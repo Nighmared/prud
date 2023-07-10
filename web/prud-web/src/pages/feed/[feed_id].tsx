@@ -1,4 +1,5 @@
 import PostList from "@/components/PostList";
+import TitleBar from "@/components/titlebar";
 import { ReadPostsResponse, fetchReadPosts } from "@/util/prud";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -18,7 +19,7 @@ const App = () => {
         postsResponse &&
         (
             <>
-                <h1>{postsResponse?.feed.title}</h1>
+                <TitleBar backButton={true} title={postsResponse.feed.title} />
                 <PostList posts={postsResponse?.posts} />
             </>
         )

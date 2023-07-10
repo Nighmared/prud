@@ -1,5 +1,6 @@
 import { Post } from "@/util/prud"
 import PostContainer from "./PostContainer"
+import { Container, Grid, List } from "@mui/material"
 
 interface Props {
     posts: Post[]
@@ -8,11 +9,11 @@ interface Props {
 const PostList: React.FC<Props> = ({ posts }) => {
 
     return (
-        <>
-            <ul>
+        <Grid container justifyContent="center">
+            <List sx={{ width: "70%" }}>
                 {posts.map((p) => <li><PostContainer post={p} /></li>)}
-            </ul>
-        </>
+            </List>
+        </Grid>
     )
 }
 
