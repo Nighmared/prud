@@ -1,7 +1,7 @@
-import os
+from confloader import Config
 
 
-class Config:
+class PrudConfig(Config):
     db_url: str = "sqlite:////data/polyring.db"
     polyring_members_url: str = "https://polyring.ch/data/members.json"
     discord_username: str = "Polyring Updater"
@@ -15,15 +15,5 @@ class Config:
 
     oldest_post_to_send_ts: int = 0
 
-    def __init__(self) -> None:
-        for k in Config.__dict__.keys():
-            env_v = os.environ.get("PRUD_" + k.upper())
-            if env_v is not None:
-                if Config.__annotations__[k] == int:
-                    self.__dict__[k] = int(env_v)
-                else:
-                    self.__dict__[k] = env_v
-                continue
 
-
-config = Config()
+config = PrudConfig(prefix="prud")

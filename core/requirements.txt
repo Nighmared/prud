@@ -3,3 +3,5 @@ feedparser
 loguru
 python-dateutil
 requests
+../common/confloader
+../common/prud-db

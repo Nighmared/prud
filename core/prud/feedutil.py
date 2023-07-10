@@ -8,11 +8,11 @@ from dateutil import parser as dateparser
 
 logger = loguru.logger
 
-from prud import db
+import pruddb
 from prud.config import config
 
 
-def _raw_post_to_object(raw_post, feed_id) -> db.Post:
+def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
     try:
         guid = raw_post.guid
     except AttributeError:
@@ -24,7 +24,7 @@ def _raw_post_to_object(raw_post, feed_id) -> db.Post:
     # replace something like "&amp;" with the actual character which in that case would be "&"
     summary = unescape(summary)
     published = int(dateparser.parse(raw_post.published).timestamp())
-    return db.Post(
+    return pruddb.PolyRingPost(
         feed_id=feed_id,
         guid=guid,
         link=raw_post.link,
@@ -34,7 +34,7 @@ def _raw_post_to_object(raw_post, feed_id) -> db.Post:
     )
 
 
-def posts_from_feed(feed: db.PolyRingFeed) -> list[db.Post]:
+def posts_from_feed(feed: pruddb.PolyRingFeed) -> list[pruddb.PolyRingPost]:
     try:
         response = requests.get(feed.feed, timeout=config.feed_request_timeout)
     except requests.exceptions.Timeout:

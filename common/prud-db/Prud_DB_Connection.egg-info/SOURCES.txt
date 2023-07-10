@@ -1,0 +1,6 @@
+pruddb.py
+setup.py
+Prud_DB_Connection.egg-info/PKG-INFO
+Prud_DB_Connection.egg-info/SOURCES.txt
+Prud_DB_Connection.egg-info/dependency_links.txt
+Prud_DB_Connection.egg-info/top_level.txt

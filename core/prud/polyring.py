@@ -1,29 +1,29 @@
 import loguru
+import pruddb
 import requests
-from pydantic import parse_obj_as
-
-from prud import db, feedutil
+from prud import feedutil
 from prud.config import config
+from pydantic import parse_obj_as
 
 logger = loguru.logger
 
 
-def get_online_feeds() -> list[db.PolyRingFeed]:
+def get_online_feeds() -> list[pruddb.PolyRingFeed]:
     response = requests.get(config.polyring_members_url)
-    feeds = parse_obj_as(list[db.PolyRingFeed], response.json())
+    feeds = parse_obj_as(list[pruddb.PolyRingFeed], response.json())
     return feeds
 
 
-def update_db_feeds():
+def update_db_feeds(db_connection: pruddb.PrudDbConnection):
     online_feeds = get_online_feeds()
-    db_feeds = db.get_feeds()
+    db_feeds = db_connection.get_feeds()
 
-    feed_url_to_feed: dict[str, db.PolyRingFeed] = dict()
+    feed_url_to_feed: dict[str, pruddb.PolyRingFeed] = dict()
     for feed in db_feeds:
         feed_url_to_feed[feed.url] = feed
     feed = None
 
-    new_feeds: list[db.PolyRingFeed] = []
+    new_feeds: list[pruddb.PolyRingFeed] = []
 
     for feed in online_feeds:
         if feed_url_to_feed.get(feed.url) is None:
@@ -33,43 +33,44 @@ def update_db_feeds():
         if feed != feed_url_to_feed[feed.url]:
             logger.critical("implement updating existing feeds!")
 
-    db.add_feeds(new_feeds)
+    db_connection.add_feeds(new_feeds)
     logger.info(f"Added {len(new_feeds)} new feeds")
 
 
-def update_db_posts_and_get_new_posts() -> list[db.Post]:
-    feeds = db.get_feeds(only_enabled=True)
-    all_new_posts: list[db.Post] = []
+def update_db_posts_and_get_new_posts(
+    db_connection: pruddb.PrudDbConnection,
+) -> list[pruddb.PolyRingPost]:
+    feeds = db_connection.get_feeds(only_enabled=True)
+    all_new_posts: list[pruddb.PolyRingPost] = []
     for feed in feeds:
-        new_posts = _get_new_feed_posts(feed)
-        db.add_posts(new_posts)
+        new_posts = _get_new_feed_posts(feed, db_connection=db_connection)
+        db_connection.add_posts(new_posts)
         all_new_posts += new_posts
 
     logger.info(f"Got {len(all_new_posts)} new posts")
     return all_new_posts
 
 
-def _get_new_feed_posts(feed: db.PolyRingFeed) -> list[db.Post]:
+def _get_new_feed_posts(
+    feed: pruddb.PolyRingFeed, db_connection: pruddb.PrudDbConnection
+) -> list[pruddb.PolyRingPost]:
     logger.info(f"Getting new Posts for blog at {feed.url}")
     try:
         online_posts = feedutil.posts_from_feed(feed)
     except ConnectionError:
         logger.critical(f"Had troubles getting to feed at {feed.url}")
-        db.disable_feed(feed)
+        db_connection.disable_feed(feed)
         return []
-    db_posts = db.get_posts_from_feed_id(feed.id)
+    db_posts = db_connection.get_posts_from_feed_id(feed.id)
 
-    guid_to_db_post: dict[str, db.Post] = dict()
+    guid_to_db_post: dict[str, pruddb.PolyRingPost] = dict()
     for post in db_posts:
         guid_to_db_post[post.guid] = post
     post = None
 
-    new_posts: list[db.Post] = []
+    new_posts: list[pruddb.PolyRingPost] = []
     for post in online_posts:
-        if (
-            guid_to_db_post.get(post.guid) is None
-            or not guid_to_db_post[post.guid].handled
-        ):
+        if guid_to_db_post.get(post.guid) is None:
             new_posts.append(post)
 
     return new_posts

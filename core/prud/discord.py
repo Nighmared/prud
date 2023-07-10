@@ -2,11 +2,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Iterable, Optional
 
+import pruddb
 import requests
-from pydantic import BaseModel, root_validator
-
-from prud import db
 from prud.config import config
+from pydantic import BaseModel, root_validator
 
 
 class EmbedType(Enum):
@@ -77,8 +76,8 @@ class Embed(BaseModel):
     fields: Optional[list[EmbedField]] = None
 
     @staticmethod
-    def from_post(post: db.Post):
-        feed = db.get_feed_from_id(post.feed_id)
+    def from_post(post: pruddb.PolyRingPost, db_connection: pruddb.PrudDbConnection):
+        feed = db_connection.get_feed_from_id(post.feed_id)
         author = EmbedAuthor(name=feed.title, url=feed.url)
         provider = EmbedProvider(name="nighmared", url="https://nighmared.tech")
         footer = EmbedFooter(
@@ -114,8 +113,10 @@ class WebhookPostObject(BaseModel):
         return values
 
     @staticmethod
-    def from_post(post: db.Post) -> "WebhookPostObject":
-        embed = Embed.from_post(post)
+    def from_post(
+        post: pruddb.PolyRingPost, db_connection: pruddb.PrudDbConnection
+    ) -> "WebhookPostObject":
+        embed = Embed.from_post(post, db_connection)
         webhook = WebhookPostObject(
             username=config.discord_username,
             avatar_url=config.avatar_url,
