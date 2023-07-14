@@ -8,7 +8,7 @@ services:
     restart: on-failure
     environment:
       - PRUD_WEBHOOK_URL=${WEBHOOK_URL}
-      - PRUD_OLDEST_POST_TO_SEND_TS=1686296861
+      - PRUD_OLDEST_POST_TO_SEND_TS=1689353832
     volumes:
       - prud_data:/data
   prud-api:
