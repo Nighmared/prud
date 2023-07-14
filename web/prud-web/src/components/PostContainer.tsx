@@ -10,17 +10,15 @@ const PostContainer: React.FC<Props> = ({ post }) => {
     const published_txt = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(post.published * 1000)
     return (
         <>
-            <ListItem>
-                <ListItemText />
+            <ListItem alignItems="center">
                 <ListItemText>
-                    <a href={post.link}>
+                    <a className="hover:underline" href={post.link} target="_blank">
                         <Typography variant="h4">{post.title}</Typography>
+                        <Typography variant="subtitle1">{published_txt}</Typography>
+                        <Typography variant="body1">{post.summary}</Typography>
                     </a>
-                    <Typography variant="subtitle1">{published_txt}</Typography>
-                    {post.summary}
 
                 </ListItemText>
-                <ListItemText />
             </ListItem>
             <Divider />
         </>

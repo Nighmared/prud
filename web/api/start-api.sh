@@ -1,2 +1,3 @@
 export API_DB_URL=sqlite:///../../core/polyring.db
-python3 main.py
+source ../../bin/activate
+python -m uvicorn main:app --port 8000

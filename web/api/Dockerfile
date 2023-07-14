@@ -9,3 +9,4 @@ COPY web/api/site-requirements.txt site-requirements.txt
 RUN ["pip", "install", "-r", "site-requirements.txt"]
 
 COPY web/api/*.py .
+CMD ["python","-m","uvicorn","main:app","--host","0.0.0.0","--port","80"]

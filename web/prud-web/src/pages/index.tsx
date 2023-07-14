@@ -13,12 +13,12 @@ const App = () => {
 
 
     return (
-        <main>
-            <TitleBar title="PolyRing" />
+        <main style={{ margin: "-8px" }}>
+            <TitleBar title="Polyring Updater" />
             <Container>
                 <FeedList feeds={feeds} />
             </Container>
-        </main >
+        </main>
     )
 }
 

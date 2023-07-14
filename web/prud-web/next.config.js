@@ -4,10 +4,11 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: 'http://localhost:8000/api/:path*'
+                destination: `http://${process.env.WEB_API_HOST}:${process.env.WEB_API_PORT}/api/:path*`
             }
         ]
-    }
+    },
+    output: 'standalone',
 }
 
 module.exports = nextConfig

@@ -11,14 +11,26 @@ services:
       - PRUD_OLDEST_POST_TO_SEND_TS=1686296861
     volumes:
       - prud_data:/data
-#  prud-api:
-#    image: nighmared/prud-api
-#    build:
-#      context: ./
-#      dockerfile: ./web/api/Dockerfile
-#    restart: on-failure
-#    volumes:
-#      - prud_data:/data
+  prud-api:
+    image: nighmared/prud-api
+    ports:
+      - 8801:80
+    build:
+      context: ./
+      dockerfile: ./web/api/Dockerfile
+    restart: on-failure
+    volumes:
+      - prud_data:/data
+  prud-web:
+    image: nighmared/prud-web
+    build:
+      context: ./web/prud-web/
+      dockerfile: Dockerfile
+    ports:
+      - 8802:3000
+    environment:
+      - WEB_API_HOST=${WEB_API_HOST:-polyring-updater_prud-api_1}
+      - WEB_API_PORT=${WEB_API_PORT:-80}
 
 volumes:
   prud_data:
