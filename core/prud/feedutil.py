@@ -24,6 +24,9 @@ def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
     # replace something like "&amp;" with the actual character which in that case would be "&"
     summary = unescape(summary)
     published = int(dateparser.parse(raw_post.published).timestamp())
+    link:str = raw_post.link
+    if not link.startswith("http"):
+        link = "http://"+link
     return pruddb.PolyRingPost(
         feed_id=feed_id,
         guid=guid,
