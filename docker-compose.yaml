@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   prud-core:
-    image: nighmared/prud
+    image: nighmared/prud-core
     restart: on-failure
     environment:
       - PRUD_WEBHOOK_URL=${WEBHOOK_URL}
