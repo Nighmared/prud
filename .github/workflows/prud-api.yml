@@ -32,4 +32,4 @@ jobs:
           push: true
           tags: nighmared/prud-web:latest
           context: "{{defaultContext}}"     
-          file: "{{defaultContext}}/web/api/Dockerfile"
+          file: "{{defaultContext}}:web/api/Dockerfile"
