@@ -30,6 +30,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: nighmared/prud-web:latest
+          tags: nighmared/prud-api:latest
           context: "{{defaultContext}}"     
           file: "web/api/Dockerfile"
