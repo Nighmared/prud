@@ -15,7 +15,7 @@ const PostContainer: React.FC<Props> = ({ post }) => {
                     <a className="hover:underline" href={linkWithHttpEnsured} target="_blank">
                         <Typography variant="h4">{post.title}</Typography>
                         <Typography variant="subtitle1">{published_txt}</Typography>
-                        <Typography variant="body1">{post.summary.substring(0, 100)}</Typography>
+                        <Typography variant="body1">{post.summary.substring(0, 500)}</Typography>
                     </a>
 
                 </ListItemText>
