@@ -3,7 +3,7 @@ name: Build and publish image for prud-web
 on:
   push:
     branches: [ "main" ]
-    paths: ["web/prud-web/src/*", "web/prud-web/*"]
+    paths: ["web/prud-web/**"]
   workflow_dispatch:
     
     
