@@ -1,7 +1,6 @@
 import PostList from "@/components/PostList";
 import TitleBar from "@/components/titlebar";
 import { ReadPostsResponse, fetchReadPosts } from "@/util/prud";
-import { HouseOutlined, } from "@mui/icons-material";
 import { Grid, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";

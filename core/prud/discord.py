@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Iterable, Optional
+from loguru import logger
 
 import pruddb
 import requests
@@ -157,5 +158,9 @@ def _dict_cleaner(d: dict) -> dict:
 
 
 def send_to_webhook(content: WebhookPostObject):
+    if config.env == "dev":
+        logger.info("Not actually sending because dev environment :)")
+        return
+
     webhook_dict = content.dict()
     requests.post(url=config.webhook_url, json=webhook_dict)

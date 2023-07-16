@@ -1,7 +1,7 @@
-import { BackHandOutlined, HomeMaxOutlined, HouseOutlined, KeyboardBackspaceOutlined, KeyboardBackspaceRounded } from "@mui/icons-material";
-import { AppBar, ListItem, ListItemIcon, ListItemText, Typography } from "@mui/material"
-import Link from "next/link";
 import '@/assets/tailwind.css';
+import { KeyboardBackspaceOutlined } from "@mui/icons-material";
+import { AppBar, ListItem, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import Link from "next/link";
 
 interface Props {
     title: string;

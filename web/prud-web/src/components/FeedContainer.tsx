@@ -1,4 +1,4 @@
-import { Feed } from "@/util/prud"
+import { Feed } from "@/util/prud";
 import { CancelOutlined, CheckCircleOutline, LanguageOutlined, RssFeedOutlined } from "@mui/icons-material";
 import { Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip } from "@mui/material";
 

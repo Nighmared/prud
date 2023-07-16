@@ -1,6 +1,6 @@
 import { Post } from "@/util/prud"
+import { List } from "@mui/material"
 import PostContainer from "./PostContainer"
-import { Container, Grid, List, ListItemText } from "@mui/material"
 
 interface Props {
     posts: Post[]

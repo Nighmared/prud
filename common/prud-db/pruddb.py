@@ -1,7 +1,8 @@
+from turtle import title
 from typing import Optional
 
 from loguru import logger
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -17,6 +18,8 @@ class PolyRingFeed(SQLModel, table=True):
         if __value.title != self.title:
             return True
         if __value.url != self.url:
+            return True
+        if __value.feed != self.feed:
             return True
         return False
 
@@ -89,7 +92,7 @@ class PrudDbConnection:
     def get_posts_from_feed_id(self, feed_id: int) -> list[PolyRingPost]:
         with Session(self.engine) as session:
             posts = session.exec(
-                select(PolyRingPost).where(PolyRingPost.feed_id == feed_id)
+                select(PolyRingPost).where(PolyRingPost.feed_id == feed_id).order_by(desc(PolyRingPost.published))
             ).all()
             return posts
 
@@ -103,6 +106,19 @@ class PrudDbConnection:
                 return
             db_feed.enabled = False
             session.commit()
+
+    def update_feed(self, existing_feed: PolyRingFeed, changed_feed: PolyRingFeed):
+        logger.info(f'Updating feed "{existing_feed.title}"')
+        with Session(self.engine) as session:
+            fresh_db_feed = session.exec(select(PolyRingFeed).where(PolyRingFeed.id == existing_feed.id)).one_or_none()
+            if fresh_db_feed is None:
+                logger.critical("Tried to update non-existing feed?")
+                return
+            if existing_feed.feed != changed_feed.feed:
+                fresh_db_feed.feed = changed_feed.feed
+            if existing_feed.title != changed_feed.title:
+                fresh_db_feed.title = changed_feed.title
+            session.commit()                
 
     def get_feeds(self, only_enabled=False) -> list[PolyRingFeed]:
         with Session(self.engine) as session:

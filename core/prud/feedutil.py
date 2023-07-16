@@ -14,23 +14,23 @@ from prud.config import config
 
 def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
     try:
-        guid = raw_post.guid
-    except AttributeError:
-        guid = raw_post.link
-    try:
         summary = re.sub(r"<.*?>", "", raw_post.summary)
     except AttributeError:
         summary = ""
-    # replace something like "&amp;" with the actual character which in that case would be "&"
-    summary = unescape(summary)
-    published = int(dateparser.parse(raw_post.published).timestamp())
     link:str = raw_post.link
     if not link.startswith("http"):
         link = "http://"+link
+    try:
+        guid = raw_post.guid
+    except AttributeError:
+        guid = link
+    # replace something like "&amp;" with the actual character which in that case would be "&"
+    summary = unescape(summary)
+    published = int(dateparser.parse(raw_post.published).timestamp())
     return pruddb.PolyRingPost(
         feed_id=feed_id,
         guid=guid,
-        link=raw_post.link,
+        link=link,
         published=published,
         title=raw_post.title,
         summary=summary,

@@ -1,6 +1,6 @@
 import { Feed } from "@/util/prud"
-import FeedContainer from "./FeedContainer"
 import { List } from "@mui/material"
+import FeedContainer from "./FeedContainer"
 
 interface Props {
     feeds: Feed[]

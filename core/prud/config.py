@@ -12,8 +12,8 @@ class PrudConfig(Config):
     feed_sync_interval_s: int = 21_600  # should be 6 hrs?
     post_sync_interval_s: int = 300  # 5 minutes?
     main_loop_interval_s: int = 250
-
     oldest_post_to_send_ts: int = 0
+    env: str = ""
 
 
 config = PrudConfig(prefix="prud")

@@ -30,8 +30,9 @@ def update_db_feeds(db_connection: pruddb.PrudDbConnection):
             logger.debug(f"Adding feed at {feed.url}")
             new_feeds.append(feed)
             continue
-        if feed != feed_url_to_feed[feed.url]:
-            logger.critical("implement updating existing feeds!")
+        db_feed = feed_url_to_feed[feed.url]
+        if db_feed != feed:
+            db_connection.update_feed(db_feed,feed)
 
     db_connection.add_feeds(new_feeds)
     logger.info(f"Added {len(new_feeds)} new feeds")
