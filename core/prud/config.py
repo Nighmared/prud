@@ -6,7 +6,7 @@ class PrudConfig(Config):
     polyring_members_url: str = "https://polyring.ch/data/members.json"
     discord_username: str = "Polyring Updater"
     avatar_url: str = ""
-    feed_request_timeout: int = 5
+    feed_request_timeout: int = 15
     webhook_url: str = ""  # VALUE REQUIRED
 
     feed_sync_interval_s: int = 21_600  # should be 6 hrs?
