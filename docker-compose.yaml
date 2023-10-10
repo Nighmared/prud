@@ -1,8 +1,8 @@
-version: '3.3'
+version: "3.3"
 services:
   prud-core:
     image: nighmared/prud-core
-    restart: on-failure
+    restart: unless-stopped
     environment:
       - PRUD_WEBHOOK_URL=${WEBHOOK_URL}
       - PRUD_OLDEST_POST_TO_SEND_TS=1689353832
@@ -12,10 +12,11 @@ services:
     image: nighmared/prud-api
     ports:
       - 8801:80
-    restart: on-failure
+    restart: unless-stopped
     volumes:
       - prud_data:/data
   prud-web:
+    restart: unless-stopped
     image: nighmared/prud-web
     ports:
       - 8802:3000
