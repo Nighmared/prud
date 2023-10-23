@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       - PRUD_WEBHOOK_URL=${WEBHOOK_URL}
-      - PRUD_OLDEST_POST_TO_SEND_TS=1689353832
+      - PRUD_OLDEST_POST_TO_SEND_TS=1698012000
     volumes:
       - prud_data:/data
   prud-api:
