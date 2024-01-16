@@ -1,7 +1,7 @@
-sqlmodel
-feedparser
-loguru
-python-dateutil
-requests
+sqlmodel==0.0.8
+feedparser==6.0.*
+loguru==0.7.*
+python-dateutil==2.8.2
+requests==2.31.0
 ../common/confloader
 ../common/prud-db
