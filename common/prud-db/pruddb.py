@@ -1,8 +1,10 @@
-from turtle import title
 from typing import Optional
 
 from loguru import logger
+from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
+
+Base = declarative_base
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -11,9 +13,11 @@ class PolyRingFeed(SQLModel, table=True):
     url: str = Field(unique=True)
     feed: str = Field(unique=True)
     enabled: bool = True
+    disable_count: Optional[int] = 0
+    disabled_until: Optional[int] = 0
 
     def __ne__(self, __value: object) -> bool:
-        if type(__value) != PolyRingFeed:
+        if not isinstance(__value, PolyRingFeed):
             return True
         if __value.title != self.title:
             return True
@@ -92,7 +96,9 @@ class PrudDbConnection:
     def get_posts_from_feed_id(self, feed_id: int) -> list[PolyRingPost]:
         with Session(self.engine) as session:
             posts = session.exec(
-                select(PolyRingPost).where(PolyRingPost.feed_id == feed_id).order_by(desc(PolyRingPost.published))
+                select(PolyRingPost)
+                .where(PolyRingPost.feed_id == feed_id)
+                .order_by(desc(PolyRingPost.published))
             ).all()
             return posts
 
@@ -110,7 +116,9 @@ class PrudDbConnection:
     def update_feed(self, existing_feed: PolyRingFeed, changed_feed: PolyRingFeed):
         logger.info(f'Updating feed "{existing_feed.title}"')
         with Session(self.engine) as session:
-            fresh_db_feed = session.exec(select(PolyRingFeed).where(PolyRingFeed.id == existing_feed.id)).one_or_none()
+            fresh_db_feed = session.exec(
+                select(PolyRingFeed).where(PolyRingFeed.id == existing_feed.id)
+            ).one_or_none()
             if fresh_db_feed is None:
                 logger.critical("Tried to update non-existing feed?")
                 return
@@ -118,13 +126,13 @@ class PrudDbConnection:
                 fresh_db_feed.feed = changed_feed.feed
             if existing_feed.title != changed_feed.title:
                 fresh_db_feed.title = changed_feed.title
-            session.commit()                
+            session.commit()
 
     def get_feeds(self, only_enabled=False) -> list[PolyRingFeed]:
         with Session(self.engine) as session:
             if only_enabled:
                 feeds = session.exec(
-                    select(PolyRingFeed).where(PolyRingFeed.enabled == True)
+                    select(PolyRingFeed).where(PolyRingFeed.enabled)
                 ).all()
             else:
                 feeds = session.exec(select(PolyRingFeed)).all()

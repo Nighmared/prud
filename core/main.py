@@ -1,9 +1,11 @@
 from time import sleep, time
 
+import alembic.config
 import pruddb
 from loguru import logger
-from prud import discord, polyring
 from prud.config import config
+
+from prud import discord, polyring
 
 last_feed_sync = 0
 last_post_sync = 0
@@ -30,6 +32,20 @@ def fetch_and_send_new_posts(
 
 if __name__ == "__main__":
     db_connection = pruddb.PrudDbConnection(db_url=config.db_url)
+    # run migrations
+    alembic_args = []
+    if config.ALEMBIC == "local":
+        alembic_args.extend(["-n", "local"])
+    alembic_args.extend(
+        [
+            "--raiseerr",
+            "upgrade",
+            "head",
+        ]
+    )
+    logger.info("Applying DB Migrations")
+    alembic.config.main(argv=alembic_args)
+
     while True:
         current_time = int(time())
         if current_time - last_feed_sync > config.feed_sync_interval_s:

@@ -4,6 +4,8 @@ COPY common common
 WORKDIR /app
 COPY core/requirements.txt requirements.txt
 RUN ["pip","install","-r", "requirements.txt"]
+COPY core/alembic.ini alembic.ini
+COPY core/alembic alembic
 COPY core/main.py main.py
 COPY core/prud prud
 
