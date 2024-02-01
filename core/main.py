@@ -40,6 +40,7 @@ def iter_disabled_feeds_and_re_enable(db_connection: pruddb.PrudDbConnection):
 
 
 if __name__ == "__main__":
+
     db_connection = pruddb.PrudDbConnection(db_url=config.db_url)
     # run migrations
     alembic_args = []
