@@ -1,3 +1,4 @@
+from time import time
 from typing import Optional
 
 from loguru import logger
@@ -7,13 +8,16 @@ from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 Base = declarative_base
 
 
+BACKOFF_STEPS = 3600
+
+
 class PolyRingFeed(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     title: str
     url: str = Field(unique=True)
     feed: str = Field(unique=True)
     enabled: bool = True
-    disable_count: Optional[int] = 0
+    backoff_level: Optional[int] = 0
     disabled_until: Optional[int] = 0
 
     def __ne__(self, __value: object) -> bool:
@@ -111,6 +115,16 @@ class PrudDbConnection:
                 logger.critical("Tried to disable non-existing feed")
                 return
             db_feed.enabled = False
+            db_feed.backoff_level = min(72, db_feed.backoff_level + 1)
+            db_feed.disabled_until = int(time()) + db_feed.backoff_level * BACKOFF_STEPS
+            session.commit()
+
+    def enable_feed(self, feed: PolyRingFeed):
+        with Session(self.engine) as session:
+            db_feed = session.exec(
+                select(PolyRingFeed).where(PolyRingFeed.id == feed.id)
+            ).one_or_none()
+            db_feed.enabled = True
             session.commit()
 
     def update_feed(self, existing_feed: PolyRingFeed, changed_feed: PolyRingFeed):
@@ -136,4 +150,11 @@ class PrudDbConnection:
                 ).all()
             else:
                 feeds = session.exec(select(PolyRingFeed)).all()
+            return feeds
+
+    def get_disabled_feeds(self) -> list[PolyRingFeed]:
+        with Session(self.engine) as session:
+            feeds = session.exec(
+                select(PolyRingFeed).where(not PolyRingFeed.enabled)
+            ).all()
             return feeds

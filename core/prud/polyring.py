@@ -1,9 +1,10 @@
 import loguru
 import pruddb
 import requests
-from prud import feedutil
 from prud.config import config
 from pydantic import parse_obj_as
+
+from prud import feedutil
 
 logger = loguru.logger
 
@@ -32,7 +33,7 @@ def update_db_feeds(db_connection: pruddb.PrudDbConnection):
             continue
         db_feed = feed_url_to_feed[feed.url]
         if db_feed != feed:
-            db_connection.update_feed(db_feed,feed)
+            db_connection.update_feed(db_feed, feed)
 
     db_connection.add_feeds(new_feeds)
     logger.info(f"Added {len(new_feeds)} new feeds")
