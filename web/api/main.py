@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pruddb
 from config import config
 from fastapi import APIRouter, FastAPI, HTTPException
@@ -16,6 +18,7 @@ class PolyRingFeedData(BaseModel):
     url: str
     feed: str
     enabled: bool
+    disabled_until: Optional[int]
 
 
 class PolyRingPostData(BaseModel):
@@ -50,6 +53,7 @@ def data_feed_from_db_feed(db_feed: pruddb.PolyRingFeed) -> PolyRingFeedData:
         enabled=db_feed.enabled,
         feed=db_feed.feed,
         url=db_feed.url,
+        disabled_until=db_feed.disabled_until,
     )
 
 

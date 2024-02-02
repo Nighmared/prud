@@ -1,3 +1,5 @@
+from typing import Literal
+
 from confloader import Config
 
 
@@ -8,10 +10,12 @@ class PrudConfig(Config):
     avatar_url: str = ""
     feed_request_timeout: int = 15
     webhook_url: str = ""  # VALUE REQUIRED
+    ALEMBIC: Literal["local", ""] = ""
 
     feed_sync_interval_s: int = 21_600  # should be 6 hrs?
     post_sync_interval_s: int = 300  # 5 minutes?
-    main_loop_interval_s: int = 250
+    main_loop_interval_s: int = 5  # not really important to keep this high
+    feed_heal_interval_s: int = 1800  # 30 mins, good enough
     oldest_post_to_send_ts: int = 0
     env: str = ""
 

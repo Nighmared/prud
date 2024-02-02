@@ -3,13 +3,12 @@ from html import unescape
 
 import feedparser
 import loguru
+import pruddb
 import requests
 from dateutil import parser as dateparser
+from prud.config import config
 
 logger = loguru.logger
-
-import pruddb
-from prud.config import config
 
 
 def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
@@ -17,9 +16,9 @@ def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
         summary = re.sub(r"<.*?>", "", raw_post.summary)
     except AttributeError:
         summary = ""
-    link:str = raw_post.link
+    link: str = raw_post.link
     if not link.startswith("http"):
-        link = "http://"+link
+        link = "http://" + link
     try:
         guid = raw_post.guid
     except AttributeError:

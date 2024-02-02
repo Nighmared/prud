@@ -1,46 +1,39 @@
-import { useEffect, useState } from "react";
-
 export type Feed = {
-    id: Number;
-    title: string;
-    url: string;
-    feed: string;
-    enabled: boolean;
-}
+  id: Number;
+  title: string;
+  url: string;
+  feed: string;
+  enabled: boolean;
+  disabled_until?: number;
+};
 
 export type ReadFeedsResponse = {
-    feeds: Feed[];
-}
+  feeds: Feed[];
+};
 
 export type Post = {
-    title: string;
-    link: string;
-    summary: string;
-    published: number;
-}
+  title: string;
+  link: string;
+  summary: string;
+  published: number;
+};
 
 export type ReadPostsResponse = {
-    feed: Feed;
-    posts: Post[];
-}
-
-
+  feed: Feed;
+  posts: Post[];
+};
 
 async function fetchApi<ResponseType>(url: string): Promise<ResponseType> {
-    const response = fetch(url,);
-    return (await response).json();
+  const response = fetch(url);
+  return (await response).json();
 }
 
 export async function readFeeds(setFeeds: Function) {
-    const result = await fetchApi<ReadFeedsResponse>("/api/feeds");
-    setFeeds(result.feeds)
+  const result = await fetchApi<ReadFeedsResponse>("/api/feeds");
+  setFeeds(result.feeds);
 }
 
 export async function fetchReadPosts(feed_id: Number, setResult: Function) {
-    const result = await fetchApi<ReadPostsResponse>(`/api/feeds/${feed_id}`)
-    setResult(result);
+  const result = await fetchApi<ReadPostsResponse>(`/api/feeds/${feed_id}`);
+  setResult(result);
 }
-
-
-
-
