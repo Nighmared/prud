@@ -29,7 +29,7 @@ const PostContainer: React.FC<Props> = ({ post }) => {
           >
             <Typography variant="h4">{post.title}</Typography>
             <Typography variant="subtitle1">{published_txt}</Typography>
-            <Typography variant="body1">
+            <Typography variant="body1" className="break-all">
               {post.summary.substring(0, 1000)}
             </Typography>
           </a>

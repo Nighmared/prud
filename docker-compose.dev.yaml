@@ -23,12 +23,12 @@ services:
     ports:
       - 8801:80
     restart: unless-stopped
+    environment:
+      - API_ENV=dev
     volumes:
       - prud_data:/data
   prud-web:
     restart: unless-stopped
-    environment:
-      - NODE_ENV=dev
     build:
       context: web/prud-web
     ports:

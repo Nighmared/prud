@@ -34,8 +34,8 @@ def fetch_and_send_new_posts(
 
 loop_config: list[tuple[int, Callable[[pruddb.PrudDbConnection], None]]] = [
     (config.feed_sync_interval_s, polyring.update_db_feeds),
-    (config.post_sync_interval_s, fetch_and_send_new_posts),
     (config.feed_reenable_interval_s, feedutil.iter_disabled_feeds_and_re_enable),
+    (config.post_sync_interval_s, fetch_and_send_new_posts),
     (config.recover_backoff_interval_s, feedutil.recover_backoff_level),
 ]
 
