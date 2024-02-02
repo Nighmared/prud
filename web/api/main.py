@@ -3,9 +3,22 @@ from typing import Optional
 import pruddb
 from config import config
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
+if config.env == "dev":
+    origins = [
+        "http://localhost:8802",
+        "http://localhost:3000",
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 router = APIRouter()
 
 

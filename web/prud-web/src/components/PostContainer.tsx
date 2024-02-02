@@ -19,8 +19,8 @@ const PostContainer: React.FC<Props> = ({ post }) => {
     : `https://${post.link}`;
   return (
     <>
-      <ListItem alignItems="center">
-        <ListItemText>
+      <div>
+        <div>
           <a
             className="hover:underline"
             href={linkWithHttpEnsured}
@@ -33,8 +33,8 @@ const PostContainer: React.FC<Props> = ({ post }) => {
               {post.summary.substring(0, 1000)}
             </Typography>
           </a>
-        </ListItemText>
-      </ListItem>
+        </div>
+      </div>
       <Divider />
     </>
   );

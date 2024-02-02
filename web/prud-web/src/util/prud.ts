@@ -29,11 +29,28 @@ async function fetchApi<ResponseType>(url: string): Promise<ResponseType> {
 }
 
 export async function readFeeds(setFeeds: Function) {
-  const result = await fetchApi<ReadFeedsResponse>("/api/feeds");
-  setFeeds(result.feeds);
+  //XXX hack for debugging...
+  if (document.location.host.includes("localhost")) {
+    const result = await fetchApi<ReadFeedsResponse>(
+      "http://localhost:8801/api/feeds"
+    );
+    setFeeds(result.feeds);
+    return;
+  } else {
+    const result = await fetchApi<ReadFeedsResponse>("/api/feeds");
+    setFeeds(result.feeds);
+  }
 }
 
 export async function fetchReadPosts(feed_id: Number, setResult: Function) {
-  const result = await fetchApi<ReadPostsResponse>(`/api/feeds/${feed_id}`);
-  setResult(result);
+  //XXX hack for debugging...
+  if (document.location.host.includes("localhost")) {
+    const result = await fetchApi<ReadPostsResponse>(
+      `http://localhost:8801/api/feeds/${feed_id}`
+    );
+    setResult(result);
+  } else {
+    const result = await fetchApi<ReadPostsResponse>(`/api/feeds/${feed_id}`);
+    setResult(result);
+  }
 }
