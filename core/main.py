@@ -9,7 +9,7 @@ from prud import discord, polyring
 
 last_feed_sync = 0
 last_post_sync = 0
-last_re_enable = 0
+last_feed_heal = 0
 
 
 def fetch_and_send_new_posts(
@@ -36,6 +36,7 @@ def iter_disabled_feeds_and_re_enable(db_connection: pruddb.PrudDbConnection):
     feeds = db_connection.get_disabled_feeds()
     for feed in feeds:
         if feed.disabled_until < now:
+            logger.info(f"re enabling {feed.title}")
             db_connection.enable_feed(feed)
 
 
@@ -67,7 +68,7 @@ if __name__ == "__main__":
                 oldest_allowed_to_send=config.oldest_post_to_send_ts,
             )
             last_post_sync = current_time
-        if current_time - last_re_enable > config.re_enable_interval_s:
+        if current_time - last_feed_heal > config.feed_heal_interval_s:
             iter_disabled_feeds_and_re_enable(db_connection)
-        logger.info(f"Sleeping for {config.main_loop_interval_s} seconds :)")
+            last_feed_heal = current_time
         sleep(config.main_loop_interval_s)

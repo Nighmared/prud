@@ -8,7 +8,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 Base = declarative_base
 
 
-BACKOFF_STEPS = 3600
+BACKOFF_STEPS = 3600  # 1h
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -115,9 +115,13 @@ class PrudDbConnection:
                 logger.critical("Tried to disable non-existing feed")
                 return
             db_feed.enabled = False
-            db_feed.backoff_level = min(72, db_feed.backoff_level + 1)
+            current_backoff_level = db_feed.backoff_level or 0
+            db_feed.backoff_level = min(72, current_backoff_level + 1)
             db_feed.disabled_until = int(time()) + db_feed.backoff_level * BACKOFF_STEPS
             session.commit()
+            logger.info(
+                f"disabled {feed.url} for {db_feed.backoff_level*BACKOFF_STEPS} seconds"
+            )
 
     def enable_feed(self, feed: PolyRingFeed):
         with Session(self.engine) as session:
@@ -155,6 +159,6 @@ class PrudDbConnection:
     def get_disabled_feeds(self) -> list[PolyRingFeed]:
         with Session(self.engine) as session:
             feeds = session.exec(
-                select(PolyRingFeed).where(not PolyRingFeed.enabled)
+                select(PolyRingFeed).where(PolyRingFeed.enabled == 0)
             ).all()
-            return feeds
+        return feeds
