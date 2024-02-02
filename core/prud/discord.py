@@ -1,10 +1,10 @@
 from datetime import datetime
 from enum import Enum
 from typing import Iterable, Optional
-from loguru import logger
 
 import pruddb
 import requests
+from loguru import logger
 from prud.config import config
 from pydantic import BaseModel, root_validator
 

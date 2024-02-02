@@ -1,6 +1,0 @@
-confloader.py
-setup.py
-confloader.egg-info/PKG-INFO
-confloader.egg-info/SOURCES.txt
-confloader.egg-info/dependency_links.txt
-confloader.egg-info/top_level.txt

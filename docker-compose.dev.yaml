@@ -1,0 +1,36 @@
+version: "3.3"
+services:
+  prud-core:
+    build:
+      context: .
+      dockerfile: core/Dockerfile
+    restart: unless-stopped
+    environment:
+      - PRUD_ENV=dev
+      - PRUD_OLDEST_POST_TO_SEND_TS=${OLDEST_POST:-1706811615581}
+      - PRUD_MAIN_LOOP_INTERVAL_S=1
+      - PRUD_RECOVER_BACKOFF_INTERVAL_S=3
+      - PRUD_POST_SYNC_INTERVAL_S=2
+      - PRUD_FEED_REENABLE_INTERVAL_S=5
+      - PRUD_DEBUG_LOGGING=true
+      - PRUD_FEED_DISABLE_BACKOFF_STEP_S=1
+    volumes:
+      - prud_data:/data
+  prud-api:
+    build:
+      context: .
+      dockerfile: web/api/Dockerfile
+    ports:
+      - 8801:80
+    restart: unless-stopped
+    volumes:
+      - prud_data:/data
+  prud-web:
+    restart: unless-stopped
+    build:
+      context: web/prud-web
+    ports:
+      - 8802:3000
+
+volumes:
+  prud_data:

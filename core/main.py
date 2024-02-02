@@ -1,24 +1,25 @@
-from time import sleep, time
+from time import sleep
+from typing import Callable
 
 import alembic.config
 import pruddb
 from loguru import logger
 from prud.config import config
+from prud.looputil import LoopManager
 
-from prud import discord, polyring
-
-last_feed_sync = 0
-last_post_sync = 0
-last_feed_heal = 0
+from prud import discord, feedutil, polyring
 
 
 def fetch_and_send_new_posts(
     db_connection: pruddb.PrudDbConnection,
-    oldest_allowed_to_send: int = 0,
 ):
+    """Central connector function that fetches new posts
+    from the xml feeds, stores them in the db and sends them
+    to the discord channel via webhook
+    """
     new_posts = polyring.update_db_posts_and_get_new_posts(db_connection=db_connection)
     for post in new_posts:
-        if post.published > oldest_allowed_to_send:
+        if post.published > config.oldest_post_to_send_ts:
             logger.info(f"Sending new Post titled {post.title} dated {post.published}")
             post_as_webhook_body = discord.WebhookPostObject.from_post(
                 post, db_connection=db_connection
@@ -31,24 +32,20 @@ def fetch_and_send_new_posts(
         db_connection.handle_post(post)
 
 
-def iter_disabled_feeds_and_re_enable(db_connection: pruddb.PrudDbConnection) -> None:
-    now = int(time())
-    feeds = db_connection.get_disabled_feeds()
-    for feed in feeds:
-        if feed.disabled_until is None:  # catchall for when this is a new feature
-            db_connection.enable_feed(feed)
-            return
-        if feed.disabled_until < now:
-            logger.info(f"re enabling {feed.title}")
-            db_connection.enable_feed(feed)
+loop_config: list[tuple[int, Callable[[pruddb.PrudDbConnection], None]]] = [
+    (config.feed_sync_interval_s, polyring.update_db_feeds),
+    (config.post_sync_interval_s, fetch_and_send_new_posts),
+    (config.feed_reenable_interval_s, feedutil.iter_disabled_feeds_and_re_enable),
+    (config.recover_backoff_interval_s, feedutil.recover_backoff_level),
+]
 
 
-if __name__ == "__main__":
-
+def main():
     db_connection = pruddb.PrudDbConnection(db_url=config.db_url)
+
     # run migrations
-    alembic_args = []
-    if config.ALEMBIC == "local":
+    alembic_args: list[str] = []
+    if config.alembic == "local":
         alembic_args.extend(["-n", "local"])
     alembic_args.extend(
         [
@@ -60,18 +57,13 @@ if __name__ == "__main__":
     logger.info("Applying DB Migrations")
     alembic.config.main(argv=alembic_args)
 
+    loop_manager = LoopManager(db_connection=db_connection)
+    loop_manager.import_config(loop_config)
+
     while True:
-        current_time = int(time())
-        if current_time - last_feed_sync > config.feed_sync_interval_s:
-            polyring.update_db_feeds(db_connection=db_connection)
-            last_feed_sync = current_time
-        if current_time - last_post_sync > config.post_sync_interval_s:
-            fetch_and_send_new_posts(
-                db_connection=db_connection,
-                oldest_allowed_to_send=config.oldest_post_to_send_ts,
-            )
-            last_post_sync = current_time
-        if current_time - last_feed_heal > config.feed_heal_interval_s:
-            iter_disabled_feeds_and_re_enable(db_connection)
-            last_feed_heal = current_time
+        loop_manager.check_all_loops()
         sleep(config.main_loop_interval_s)
+
+
+if __name__ == "__main__":
+    main()

@@ -4,5 +4,4 @@ loguru==0.7.*
 python-dateutil==2.8.2
 requests==2.31.0
 alembic==1.13.1
-../common/confloader
-../common/prud-db
+-r local-requirements.txt

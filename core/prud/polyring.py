@@ -10,7 +10,10 @@ logger = loguru.logger
 
 
 def get_online_feeds() -> list[pruddb.PolyRingFeed]:
-    response = requests.get(config.polyring_members_url)
+    try:
+        response = requests.get(config.polyring_members_url, timeout=10)
+    except TimeoutError as exc:
+        raise ValueError("Couldn't reach polyring website within timeout") from exc
     feeds = parse_obj_as(list[pruddb.PolyRingFeed], response.json())
     return feeds
 
@@ -56,12 +59,13 @@ def update_db_posts_and_get_new_posts(
 def _get_new_feed_posts(
     feed: pruddb.PolyRingFeed, db_connection: pruddb.PrudDbConnection
 ) -> list[pruddb.PolyRingPost]:
-    logger.info(f"Getting new Posts for blog at {feed.url}")
     try:
         online_posts = feedutil.posts_from_feed(feed)
     except ConnectionError:
         logger.critical(f"Had troubles getting to feed at {feed.url}")
-        db_connection.disable_feed(feed)
+        db_connection.disable_feed(
+            feed, backoff_steps=config.feed_disable_backoff_step_s
+        )
         return []
     db_posts = db_connection.get_posts_from_feed_id(feed.id)
 

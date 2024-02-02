@@ -1,3 +1,6 @@
+"""Module to handle all communication between
+the prud services and the db"""
+
 from time import time
 from typing import Optional
 
@@ -8,10 +11,12 @@ from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 Base = declarative_base
 
 
-BACKOFF_STEPS = 3600  # 1h
+FALLBACK_BACKOFF_STEPS = 3600  # 1h
 
 
 class PolyRingFeed(SQLModel, table=True):
+    """DB table for the different feeds"""
+
     id: int = Field(default=None, primary_key=True)
     title: str
     url: str = Field(unique=True)
@@ -33,6 +38,8 @@ class PolyRingFeed(SQLModel, table=True):
 
 
 class PolyRingPost(SQLModel, table=True):
+    """DB Table to store blog posts"""
+
     id: Optional[int] = Field(default=None, primary_key=True)
     feed_id: int = Field(default=None, foreign_key=PolyRingFeed.id)
     title: str
@@ -44,16 +51,21 @@ class PolyRingPost(SQLModel, table=True):
 
 
 class PrudDbConnection:
+    """The class that provides methods for all
+    required interactions with the db"""
+
     def __init__(self, db_url: str) -> None:
         self.engine = create_engine(db_url)
         SQLModel.metadata.create_all(self.engine)
 
     def add_feed(self, feed: PolyRingFeed):
+        """ "add feed to the db"""
         with Session(self.engine) as session:
             session.add(feed)
             session.commit()
 
     def add_feeds(self, feeds: list[PolyRingFeed]):
+        """Add multiple feeds to the db in a batch"""
         with Session(self.engine) as session:
             session.add_all(feeds)
             session.commit()
@@ -106,7 +118,9 @@ class PrudDbConnection:
             ).all()
             return posts
 
-    def disable_feed(self, feed: PolyRingFeed):
+    def disable_feed(
+        self, feed: PolyRingFeed, backoff_steps: int = FALLBACK_BACKOFF_STEPS
+    ):
         with Session(self.engine) as session:
             db_feed = session.exec(
                 select(PolyRingFeed).where(PolyRingFeed.id == feed.id)
@@ -117,10 +131,10 @@ class PrudDbConnection:
             db_feed.enabled = False
             current_backoff_level = db_feed.backoff_level or 0
             db_feed.backoff_level = min(72, current_backoff_level + 1)
-            db_feed.disabled_until = int(time()) + db_feed.backoff_level * BACKOFF_STEPS
+            db_feed.disabled_until = int(time()) + db_feed.backoff_level * backoff_steps
             session.commit()
             logger.info(
-                f"disabled {feed.url} for {db_feed.backoff_level*BACKOFF_STEPS} seconds"
+                f"disabled {feed.url} for {db_feed.backoff_level*backoff_steps} seconds"
             )
 
     def enable_feed(self, feed: PolyRingFeed):
@@ -128,6 +142,9 @@ class PrudDbConnection:
             db_feed = session.exec(
                 select(PolyRingFeed).where(PolyRingFeed.id == feed.id)
             ).one_or_none()
+            if db_feed is None:
+                logger.critical("Tried to enable non-existing feed")
+                return
             db_feed.enabled = True
             session.commit()
 
@@ -162,3 +179,15 @@ class PrudDbConnection:
                 select(PolyRingFeed).where(PolyRingFeed.enabled == 0)
             ).all()
         return feeds
+
+    def decrease_backoff_level(self, feed: PolyRingFeed, decrease_by=1) -> None:
+        with Session(self.engine) as session:
+            db_feed = session.exec(
+                select(PolyRingFeed).where(PolyRingFeed.id == feed.id)
+            ).one_or_none()
+            if db_feed is None:
+                logger.critical("Tried to modify backoff of non-existing feed")
+                return
+            current_backoff_level = db_feed.backoff_level or 0
+            db_feed.backoff_level = max(0, current_backoff_level - decrease_by)
+            session.commit()
