@@ -9,3 +9,4 @@ __pycache__/*
 webhook.txt
 .env
 */__pycache__/*
+.venv
