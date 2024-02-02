@@ -31,10 +31,13 @@ def fetch_and_send_new_posts(
         db_connection.handle_post(post)
 
 
-def iter_disabled_feeds_and_re_enable(db_connection: pruddb.PrudDbConnection):
+def iter_disabled_feeds_and_re_enable(db_connection: pruddb.PrudDbConnection) -> None:
     now = int(time())
     feeds = db_connection.get_disabled_feeds()
     for feed in feeds:
+        if feed.disabled_until is None:  # catchall for when this is a new feature
+            db_connection.enable_feed(feed)
+            return
         if feed.disabled_until < now:
             logger.info(f"re enabling {feed.title}")
             db_connection.enable_feed(feed)
