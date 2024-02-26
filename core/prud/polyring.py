@@ -22,7 +22,7 @@ def update_db_feeds(db_connection: pruddb.PrudDbConnection):
     online_feeds = get_online_feeds()
     db_feeds = db_connection.get_feeds()
 
-    feed_url_to_feed: dict[str, pruddb.PolyRingFeed] = dict()
+    feed_url_to_feed: dict[str, pruddb.PolyRingFeed] = {}
     for feed in db_feeds:
         feed_url_to_feed[feed.url] = feed
     feed = None
@@ -67,6 +67,7 @@ def _get_new_feed_posts(
             feed, backoff_steps=config.feed_disable_backoff_step_s
         )
         return []
+
     db_posts = db_connection.get_posts_from_feed_id(feed.id)
 
     guid_to_db_post: dict[str, pruddb.PolyRingPost] = dict()
