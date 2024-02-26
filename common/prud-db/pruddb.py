@@ -101,6 +101,15 @@ class PrudDbConnection:
             db_post.handled = True
             session.commit()
 
+    def get_unhandled_posts(self) -> list[PolyRingPost]:
+        with Session(self.engine) as session:
+            posts = session.exec(
+                select(PolyRingPost)
+                .where(PolyRingPost.handled == False)
+                .order_by(desc(PolyRingPost.published))
+            ).all()
+            return posts
+
     def _yeet_posts(self):
         logger.critical("Yeeting all posts, MAKE SURE THIS IS NOT CALLED FOR PROD!!!")
         with Session(self.engine) as session:

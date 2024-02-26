@@ -18,6 +18,7 @@ class PrudConfig(Config):
     feed_disable_backoff_step_s: int = 3600  # start at 1h, then 2h ...
     feed_reenable_interval_s: int = 1800  # 30 mins, good enough
     recover_backoff_interval_s: int = 43_200  # 2*21600 = 12 hrs?
+    send_unhandled_posts_interval_s: int = 3600  # 1 hr
     oldest_post_to_send_ts: int = 0
     env: str = ""
     debug_logging: bool = False
