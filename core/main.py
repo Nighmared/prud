@@ -30,15 +30,14 @@ def send_posts(
 ):
     for post in posts:
         if post.published > config.oldest_post_to_send_ts:
-            logger.info(f"Sending new Post titled {post.title} dated {post.published}")
+            logger.info(f"Sending Post titled {post.title} dated {post.published}")
             post_as_webhook_body = discord.WebhookPostObject.from_post(
                 post, db_connection=db_connection
             )
             discord.send_to_webhook(post_as_webhook_body)
+            db_connection.tag_post_sent(post)
         else:
-            logger.info(
-                f"Skipping newly found Post title {post.title} because its too old"
-            )
+            logger.info(f"Not sending Post titled {post.title} because its too old")
         db_connection.handle_post(post)
 
 

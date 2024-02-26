@@ -48,6 +48,7 @@ class PolyRingPost(SQLModel, table=True):
     summary: str
     published: int
     handled: bool = False
+    sent: Optional[bool] = False
 
 
 class PrudDbConnection:
@@ -93,6 +94,14 @@ class PrudDbConnection:
             session.add_all(posts)
             session.commit()
 
+    def tag_post_sent(self, post: PolyRingPost):
+        with Session(self.engine) as session:
+            db_post = session.exec(
+                select(PolyRingPost).where(PolyRingPost.id == post.id)
+            ).one()
+            db_post.sent = True
+            session.commit()
+
     def handle_post(self, post: PolyRingPost):
         with Session(self.engine) as session:
             db_post = session.exec(
@@ -105,7 +114,7 @@ class PrudDbConnection:
         with Session(self.engine) as session:
             posts = session.exec(
                 select(PolyRingPost)
-                .where(PolyRingPost.handled == False)
+                .where(PolyRingPost.handled == 0)
                 .order_by(desc(PolyRingPost.published))
             ).all()
             return posts
