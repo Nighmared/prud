@@ -49,10 +49,10 @@ def update_db_posts_and_get_new_posts(
     all_new_posts: list[pruddb.PolyRingPost] = []
     for feed in feeds:
         new_posts = _get_new_feed_posts(feed, db_connection=db_connection)
-        db_connection.add_posts(new_posts)
         all_new_posts += new_posts
 
     logger.info(f"Got {len(all_new_posts)} new posts")
+    db_connection.add_posts(all_new_posts)
     return all_new_posts
 
 
