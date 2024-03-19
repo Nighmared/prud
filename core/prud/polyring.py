@@ -1,8 +1,8 @@
 import loguru
 import pruddb
 import requests
+import validators
 from prud.config import config
-from pydantic import parse_obj_as
 
 from prud import feedutil
 
@@ -14,7 +14,14 @@ def get_online_feeds() -> list[pruddb.PolyRingFeed]:
         response = requests.get(config.polyring_members_url, timeout=10)
     except TimeoutError as exc:
         raise ValueError("Couldn't reach polyring website within timeout") from exc
-    feeds = parse_obj_as(list[pruddb.PolyRingFeed], response.json())
+    feeds: list[pruddb.PolyRingFeed] = []
+    resp_json = response.json()
+    for i, f in enumerate(resp_json):
+        curr_feed = pruddb.PolyRingFeed.parse_obj(f)
+        if validators.url(curr_feed.url) and validators.url(curr_feed.feed):
+            feeds.append(curr_feed)
+        else:
+            logger.warning(f"Skipping feed {i} because the format looks invalid")
     return feeds
 
 
