@@ -18,23 +18,38 @@ def fetch_and_send_new_posts(
     to the discord channel via webhook
     """
     new_posts = polyring.update_db_posts_and_get_new_posts(db_connection=db_connection)
-    for post in new_posts:
+    send_posts(new_posts, db_connection=db_connection)
+
+
+def send_post(post: pruddb.PolyRingPost, db_connection: pruddb.PrudDbConnection):
+    send_posts([post], db_connection)
+
+
+def send_posts(
+    posts: list[pruddb.PolyRingPost], db_connection: pruddb.PrudDbConnection
+):
+    for post in posts:
         if post.published > config.oldest_post_to_send_ts:
-            logger.info(f"Sending new Post titled {post.title} dated {post.published}")
+            logger.info(f"Sending Post titled {post.title} dated {post.published}")
             post_as_webhook_body = discord.WebhookPostObject.from_post(
                 post, db_connection=db_connection
             )
             discord.send_to_webhook(post_as_webhook_body)
+            db_connection.tag_post_sent(post)
         else:
-            logger.info(
-                f"Skipping newly found Post title {post.title} because its too old"
-            )
+            logger.info(f"Not sending Post titled {post.title} because its too old")
         db_connection.handle_post(post)
+
+
+def send_unhandled_posts(db_connection: pruddb.PrudDbConnection):
+    unhandled_posts = db_connection.get_unhandled_posts()
+    send_posts(unhandled_posts, db_connection=db_connection)
 
 
 loop_config: list[tuple[int, Callable[[pruddb.PrudDbConnection], None]]] = [
     (config.feed_sync_interval_s, polyring.update_db_feeds),
     (config.feed_reenable_interval_s, feedutil.iter_disabled_feeds_and_re_enable),
+    (config.send_unhandled_posts_interval_s, send_unhandled_posts),
     (config.post_sync_interval_s, fetch_and_send_new_posts),
     (config.recover_backoff_interval_s, feedutil.recover_backoff_level),
 ]

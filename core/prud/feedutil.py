@@ -30,7 +30,12 @@ def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
         guid = link
     # replace something like "&amp;" with the actual character which in that case would be "&"
     summary = unescape(summary)
-    published = int(dateparser.parse(raw_post.published, tzinfos=tzinfos).timestamp())
+    try:
+        published = int(
+            dateparser.parse(raw_post.published, tzinfos=tzinfos).timestamp()
+        )
+    except AttributeError:
+        published = int(time())
     return pruddb.PolyRingPost(
         feed_id=feed_id,
         guid=guid,

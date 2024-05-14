@@ -1,8 +1,8 @@
 import loguru
 import pruddb
 import requests
+import validators
 from prud.config import config
-from pydantic import parse_obj_as
 
 from prud import feedutil
 
@@ -14,7 +14,14 @@ def get_online_feeds() -> list[pruddb.PolyRingFeed]:
         response = requests.get(config.polyring_members_url, timeout=10)
     except TimeoutError as exc:
         raise ValueError("Couldn't reach polyring website within timeout") from exc
-    feeds = parse_obj_as(list[pruddb.PolyRingFeed], response.json())
+    feeds: list[pruddb.PolyRingFeed] = []
+    resp_json = response.json()
+    for i, f in enumerate(resp_json):
+        curr_feed = pruddb.PolyRingFeed.parse_obj(f)
+        if validators.url(curr_feed.url) and validators.url(curr_feed.feed):
+            feeds.append(curr_feed)
+        else:
+            logger.warning(f"Skipping feed {i} because the format looks invalid")
     return feeds
 
 
@@ -22,7 +29,7 @@ def update_db_feeds(db_connection: pruddb.PrudDbConnection):
     online_feeds = get_online_feeds()
     db_feeds = db_connection.get_feeds()
 
-    feed_url_to_feed: dict[str, pruddb.PolyRingFeed] = dict()
+    feed_url_to_feed: dict[str, pruddb.PolyRingFeed] = {}
     for feed in db_feeds:
         feed_url_to_feed[feed.url] = feed
     feed = None
@@ -49,10 +56,10 @@ def update_db_posts_and_get_new_posts(
     all_new_posts: list[pruddb.PolyRingPost] = []
     for feed in feeds:
         new_posts = _get_new_feed_posts(feed, db_connection=db_connection)
-        db_connection.add_posts(new_posts)
         all_new_posts += new_posts
 
     logger.info(f"Got {len(all_new_posts)} new posts")
+    db_connection.add_posts(all_new_posts)
     return all_new_posts
 
 
@@ -67,6 +74,7 @@ def _get_new_feed_posts(
             feed, backoff_steps=config.feed_disable_backoff_step_s
         )
         return []
+
     db_posts = db_connection.get_posts_from_feed_id(feed.id)
 
     guid_to_db_post: dict[str, pruddb.PolyRingPost] = dict()

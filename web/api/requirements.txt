@@ -1,5 +1,5 @@
-fastapi==0.109.1
-pydantic==1.10.11
+fastapi==0.111.0
+pydantic==1.10.13
 uvicorn==0.23.0
 loguru==0.7.2
-sqlmodel==0.0.8
+sqlmodel==0.0.18
