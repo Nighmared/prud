@@ -13,6 +13,7 @@ from prud.config import config
 
 logger = loguru.logger
 
+
 tzinfos = {"CET": tz.gettz("CET")}
 
 

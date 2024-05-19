@@ -1,13 +1,12 @@
 from time import sleep
-from typing import Callable
+from typing import Callable, Sequence
 
 import alembic.config
 import pruddb
 from loguru import logger
+from prud import discord, feedutil, polyring
 from prud.config import config
 from prud.looputil import LoopManager
-
-from prud import discord, feedutil, polyring
 
 
 def fetch_and_send_new_posts(
@@ -26,7 +25,7 @@ def send_post(post: pruddb.PolyRingPost, db_connection: pruddb.PrudDbConnection)
 
 
 def send_posts(
-    posts: list[pruddb.PolyRingPost], db_connection: pruddb.PrudDbConnection
+    posts: Sequence[pruddb.PolyRingPost], db_connection: pruddb.PrudDbConnection
 ):
     for post in posts:
         if post.published > config.oldest_post_to_send_ts:

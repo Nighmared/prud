@@ -29,10 +29,14 @@ class Config:
     """
 
     __prefix: str
+    __field_types: dict[str, type]
+    __cached_print_string = ""
 
     def __init__(self, prefix: str) -> None:
         self.__prefix = prefix
+        self.__field_types = {}
         cls = self.__class__
+
         for k in cls.__annotations__.keys():
 
             env_v = os.environ.get(prefix.upper() + "_" + k.upper())
@@ -43,6 +47,7 @@ class Config:
                     raise ValueError(
                         f"No type given for field {cls.__name__}.{k}"
                     ) from exc
+                self.__field_types[k] = field_type
                 if field_type is int:
                     self.__dict__[k] = int(env_v)
                 elif field_type is float:
@@ -62,4 +67,10 @@ class Config:
                 )
 
     def __repr__(self) -> str:
-        return f"Config[{self.__prefix}]{str(self.__dict__)}"
+        if self.__cached_print_string != "":
+            return self.__cached_print_string
+        res_str = f"Config[{self.__prefix}]\n"
+        for field_name, field_type in self.__field_types.items():
+            res_str += f"  .{field_name}:{field_type} = {self.__dict__[field_name]}\n"
+        self.__cached_print_string = res_str
+        return res_str

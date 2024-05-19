@@ -2,7 +2,7 @@
 the prud services and the db"""
 
 from time import time
-from typing import Optional
+from typing import Optional, Sequence
 
 from loguru import logger
 from sqlalchemy.ext.declarative import declarative_base
@@ -110,7 +110,7 @@ class PrudDbConnection:
             db_post.handled = True
             session.commit()
 
-    def get_unhandled_posts(self) -> list[PolyRingPost]:
+    def get_unhandled_posts(self) -> Sequence[PolyRingPost]:
         with Session(self.engine) as session:
             posts = session.exec(
                 select(PolyRingPost)
@@ -127,7 +127,7 @@ class PrudDbConnection:
                 session.delete(p)
             session.commit()
 
-    def get_posts_from_feed_id(self, feed_id: int) -> list[PolyRingPost]:
+    def get_posts_from_feed_id(self, feed_id: int) -> Sequence[PolyRingPost]:
         with Session(self.engine) as session:
             posts = session.exec(
                 select(PolyRingPost)
@@ -181,7 +181,7 @@ class PrudDbConnection:
                 fresh_db_feed.title = changed_feed.title
             session.commit()
 
-    def get_feeds(self, only_enabled=False) -> list[PolyRingFeed]:
+    def get_feeds(self, only_enabled=False) -> Sequence[PolyRingFeed]:
         with Session(self.engine) as session:
             if only_enabled:
                 feeds = session.exec(
@@ -191,7 +191,7 @@ class PrudDbConnection:
                 feeds = session.exec(select(PolyRingFeed)).all()
             return feeds
 
-    def get_disabled_feeds(self) -> list[PolyRingFeed]:
+    def get_disabled_feeds(self) -> Sequence[PolyRingFeed]:
         with Session(self.engine) as session:
             feeds = session.exec(
                 select(PolyRingFeed).where(PolyRingFeed.enabled == 0)
