@@ -41,7 +41,7 @@ class PolyRingPost(SQLModel, table=True):
     """DB Table to store blog posts"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    feed_id: int = Field(default=None, foreign_key=PolyRingFeed.id)
+    feed_id: int = Field(default=None, foreign_key="polyringfeed.id")
     title: str
     link: str
     guid: str

@@ -3,6 +3,8 @@ import pruddb
 import requests
 import validators
 from prud.config import config
+from pydantic import ValidationError
+from pydantic_core import ErrorDetails
 
 from prud import feedutil
 
@@ -17,7 +19,18 @@ def get_online_feeds() -> list[pruddb.PolyRingFeed]:
     feeds: list[pruddb.PolyRingFeed] = []
     resp_json = response.json()
     for i, f in enumerate(resp_json):
-        curr_feed = pruddb.PolyRingFeed.parse_obj(f)
+        try:
+            curr_feed = pruddb.PolyRingFeed.model_validate(f)
+        except ValidationError as e:
+            errs: list[ErrorDetails] = e.errors()
+            first_err = errs[0]
+            logger.debug(
+                f"Ignoring feed {i} because of a validation error"
+                + f" [Field:{first_err['loc']} | {first_err['msg']} but was {first_err['input']} ]"
+            )
+            if len(errs) > 1:
+                logger.opt(exception=e).warning("There were more errors!")
+            continue
         if validators.url(curr_feed.url) and validators.url(curr_feed.feed):
             feeds.append(curr_feed)
         else:

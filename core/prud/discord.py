@@ -1,12 +1,12 @@
 from datetime import datetime
 from enum import Enum
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Self
 
 import pruddb
 import requests
 from loguru import logger
 from prud.config import config
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, ValidationError, model_validator
 
 
 class EmbedType(Enum):
@@ -103,15 +103,11 @@ class WebhookPostObject(BaseModel):
     avatar_url: Optional[str] = config.avatar_url
     embeds: Optional[list[Embed]] = []
 
-    @root_validator()
-    def verify_has_content(cls, values):
-        content = values.get("content")
-        embeds = values.get("embeds")
-        file = values.get("files")
-
-        if content is None and embeds is None and file is None:
-            raise ValueError("WebhookObject must have one of content,file,embeds")
-        return values
+    @model_validator(mode="after")
+    def verify_has_content(self) -> Self:
+        if self.content is None and self.embeds is None:
+            raise ValidationError("WebhookObject must have either of content or embeds")
+        return self
 
     @staticmethod
     def from_post(
@@ -163,4 +159,4 @@ def send_to_webhook(content: WebhookPostObject):
         return
 
     webhook_dict = content.dict()
-    requests.post(url=config.webhook_url, json=webhook_dict)
+    requests.post(url=config.webhook_url, json=webhook_dict, timeout=10)

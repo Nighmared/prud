@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.12
 WORKDIR /
 RUN mkdir -p common/{ prud-db, confloader }
 COPY common/prud-db/pruddb.py common/prud-db/pyproject.toml common/prud-db/
