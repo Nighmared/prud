@@ -90,4 +90,9 @@ def read_posts(feed_id: int):
     return response
 
 
+@router.get("/status")
+def status():
+    return {"status": "okay"}
+
+
 app.include_router(router, prefix="/api")
