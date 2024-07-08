@@ -4,6 +4,6 @@ loguru==0.7.*
 python-dateutil==2.9.0.post0
 requests==2.32.0
 alembic==1.13.1
-validators==0.28.*
+validators==0.31.*
 pydantic==2.*
 -r local-requirements.txt
