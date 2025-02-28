@@ -165,7 +165,7 @@ def send_to_webhook(content: WebhookPostObject):
     webhook_dict = content.dict()
     resp = requests.post(url=config.webhook_url, json=webhook_dict, timeout=10)
     if resp.status_code // 100 != 2:
-        logger.warn("Got error status back from discord")
+        logger.debug("Got error status back from discord")
         logger.debug(resp.json())
         raise PostException(
             f"Got non 2xx status code from discord ({resp.status_code})"
