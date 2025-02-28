@@ -24,6 +24,9 @@ def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
         summary = ""
     link: str = raw_post.link
     if not link.startswith("http"):
+        if link.startswith("//"):
+            # links like //example.com/asdf because wtf is even going on :cri:
+            link = link.lstrip("/")
         link = "http://" + link
     try:
         guid = raw_post.guid

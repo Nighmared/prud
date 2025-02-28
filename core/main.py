@@ -39,6 +39,7 @@ def send_posts(
                 db_connection.tag_post_sent(post)
             except discord.PostException:
                 logger.warning("Failed to send post to discord!")
+                continue
         else:
             logger.info(f"Not sending Post titled {post.title} because its too old")
         db_connection.handle_post(post)
