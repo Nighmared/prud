@@ -159,4 +159,5 @@ def send_to_webhook(content: WebhookPostObject):
         return
 
     webhook_dict = content.dict()
-    requests.post(url=config.webhook_url, json=webhook_dict, timeout=10)
+    resp = requests.post(url=config.webhook_url, json=webhook_dict, timeout=10)
+    logger.info(resp.status_code)
