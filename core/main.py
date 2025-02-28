@@ -4,9 +4,10 @@ from typing import Callable, Sequence
 import alembic.config
 import pruddb
 from loguru import logger
-from prud import discord, feedutil, polyring
 from prud.config import config
 from prud.looputil import LoopManager
+
+from prud import discord, feedutil, polyring
 
 
 def fetch_and_send_new_posts(
@@ -33,8 +34,11 @@ def send_posts(
             post_as_webhook_body = discord.WebhookPostObject.from_post(
                 post, db_connection=db_connection
             )
-            discord.send_to_webhook(post_as_webhook_body)
-            db_connection.tag_post_sent(post)
+            try:
+                discord.send_to_webhook(post_as_webhook_body)
+                db_connection.tag_post_sent(post)
+            except discord.PostException:
+                logger.warning("Failed to send post to discord!")
         else:
             logger.info(f"Not sending Post titled {post.title} because its too old")
         db_connection.handle_post(post)
