@@ -1,4 +1,3 @@
-version: "3.3"
 services:
   prud-core:
     build:
@@ -25,6 +24,7 @@ services:
     restart: unless-stopped
     environment:
       - API_ENV=dev
+      - JWT_SECRET=verysecret
     volumes:
       - prud_data:/data
   prud-web:

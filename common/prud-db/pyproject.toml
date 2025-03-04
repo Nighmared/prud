@@ -2,7 +2,7 @@
 name = "pruddb"
 description = "Simple Library used by prud microservices to interact with the central database"
 authors = [{ name = "nighmared", email = "joniii@ethz.wtf" }]
-version = "1.0.1"
+version = "1.0.2"
 requires-python = ">=3.10"
 
 [build-system]

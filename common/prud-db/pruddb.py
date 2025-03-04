@@ -1,6 +1,7 @@
 """Module to handle all communication between
 the prud services and the db"""
 
+from enum import Enum, auto
 from time import time
 from typing import Optional, Sequence
 
@@ -12,6 +13,11 @@ Base = declarative_base
 
 
 FALLBACK_BACKOFF_STEPS = 3600  # 1h
+
+
+class Role(Enum):
+    DEFAULT = auto()
+    ADMIN = auto()
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -51,6 +57,16 @@ class PolyRingPost(SQLModel, table=True):
     sent: Optional[bool] = False
 
 
+class User(SQLModel, table=True):
+    """DB table to store users"""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(unique=True, primary_key=True)
+    email: str
+    argon2_hash: str
+    role: Role = Field(default=Role.DEFAULT, nullable=False)
+
+
 class PrudDbConnection:
     """The class that provides methods for all
     required interactions with the db"""
@@ -69,6 +85,11 @@ class PrudDbConnection:
         """Add multiple feeds to the db in a batch"""
         with Session(self.engine) as session:
             session.add_all(feeds)
+            session.commit()
+
+    def add_user(self, user: User):
+        with Session(self.engine) as session:
+            session.add(user)
             session.commit()
 
     def get_feed_from_id(self, feed_id: int) -> PolyRingFeed:
@@ -93,6 +114,22 @@ class PrudDbConnection:
             session.expire_on_commit = False
             session.add_all(posts)
             session.commit()
+
+    def delete_post(self, post: PolyRingPost):
+        with Session(self.engine) as session:
+            session.delete(post)
+            session.commit()
+
+    def get_post_from_id(self, post_id: int) -> PolyRingPost:
+        with Session(self.engine) as session:
+            post = session.exec(
+                select(PolyRingPost).where(PolyRingPost.id == post_id)
+            ).one_or_none()
+
+            if post is None:
+                logger.critical(f"Post for id {post_id} not found.")
+                raise ValueError("invalid post id")
+            return post
 
     def tag_post_sent(self, post: PolyRingPost):
         with Session(self.engine) as session:

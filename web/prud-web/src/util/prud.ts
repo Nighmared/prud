@@ -12,6 +12,7 @@ export type ReadFeedsResponse = {
 };
 
 export type Post = {
+  id: number;
   title: string;
   link: string;
   summary: string;
@@ -21,6 +22,10 @@ export type Post = {
 export type ReadPostsResponse = {
   feed: Feed;
   posts: Post[];
+};
+
+export type Session = {
+  id: string;
 };
 
 async function fetchApi<ResponseType>(url: string): Promise<ResponseType> {
@@ -53,4 +58,15 @@ export async function fetchReadPosts(feed_id: Number, setResult: Function) {
     const result = await fetchApi<ReadPostsResponse>(`/api/feeds/${feed_id}`);
     setResult(result);
   }
+}
+
+// export async function deletePost
+
+export function isAdmin(session?: Session) {
+  // TODO implement + handle undefined
+  return true;
+}
+
+export function deletePost(id: Number, session?: Session) {
+  console.log(id);
 }

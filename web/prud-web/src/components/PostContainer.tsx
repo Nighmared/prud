@@ -1,12 +1,12 @@
 import { Divider, ListItem, ListItemText, Typography } from "@mui/material";
-
-import { Post } from "@/util/prud";
+import { Post, Session, deletePost, isAdmin } from "@/util/prud";
 
 interface Props {
   post: Post;
+  session?: Session;
 }
 
-const PostContainer: React.FC<Props> = ({ post }) => {
+const PostContainer: React.FC<Props> = ({ post, session }) => {
   const published_txt = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
@@ -20,19 +20,26 @@ const PostContainer: React.FC<Props> = ({ post }) => {
   return (
     <>
       <div>
-        <div>
-          <a
-            className="hover:underline"
-            href={linkWithHttpEnsured}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            <Typography variant="h4">{post.title}</Typography>
-            <Typography variant="subtitle1">{published_txt}</Typography>
-            <Typography variant="body1" className="break-all">
-              {post.summary.substring(0, 1000)}
-            </Typography>
-          </a>
+        <div className="flex flex-row gap-2">
+          <div>
+            <a
+              className="hover:underline"
+              href={linkWithHttpEnsured}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <Typography variant="h4">{post.title}</Typography>
+              <Typography variant="subtitle1">{published_txt}</Typography>
+              <Typography variant="body1" className="break-all">
+                {post.summary.substring(0, 1000)}
+              </Typography>
+            </a>
+          </div>
+          <div>
+            <button onClick={() => deletePost(post.id, session)}>
+              {isAdmin(session) ? "❌" : ""}
+            </button>
+          </div>
         </div>
       </div>
       <Divider />
