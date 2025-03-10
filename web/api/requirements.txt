@@ -1,5 +1,5 @@
 fastapi==0.115.8
 uvicorn==0.32.1
 loguru==0.7.3
-sqlmodel==0.0.22
+sqlmodel==0.0.24
 pydantic==2.*
