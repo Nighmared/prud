@@ -60,6 +60,10 @@ def posts_from_feed(feed: pruddb.PolyRingFeed) -> list[pruddb.PolyRingPost]:
     parsed: FeedParserDict = feedparser.parse(response.content)
     raw_posts = parsed.entries
     posts = [_raw_post_to_object(p, feed.id) for p in raw_posts]
+    if feed.id == 28:
+        logger.debug("Special printing for bruce")
+        for p in posts:
+            logger.debug("\t" + p.title)
     return posts
 
 

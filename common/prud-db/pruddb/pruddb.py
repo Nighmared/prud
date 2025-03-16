@@ -5,11 +5,15 @@ from enum import Enum, auto
 from time import time
 from typing import Optional, Sequence
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerificationError
 from loguru import logger
+from pruddb.exceptions import UserNotFoundError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 
 Base = declarative_base
+ph = PasswordHasher()
 
 
 FALLBACK_BACKOFF_STEPS = 3600  # 1h
@@ -61,10 +65,30 @@ class User(SQLModel, table=True):
     """DB table to store users"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, primary_key=True)
+    username: str = Field(unique=True)
     email: str
     argon2_hash: str
     role: Role = Field(default=Role.DEFAULT, nullable=False)
+
+    @staticmethod
+    def from_plaintext_pw(
+        username: str, password: str, email: str, role: Role = Role.DEFAULT
+    ) -> "User":
+        argon2_hash = ph.hash(password)
+        new_user = User(
+            username=username, email=email, argon2_hash=argon2_hash, role=role
+        )
+        return new_user
+
+    def verify(self, password: str) -> bool:
+        try:
+            pass_match = ph.verify(self.argon2_hash, password)
+        except VerificationError:
+            return False
+        return pass_match
+
+    def update_password(self, password: str):
+        self.argon2_hash = ph.hash(password)
 
 
 class PrudDbConnection:
@@ -89,6 +113,33 @@ class PrudDbConnection:
 
     def add_user(self, user: User):
         with Session(self.engine) as session:
+            session.add(user)
+            session.commit()
+
+    def get_user_from_username(self, username: str) -> User:
+        with Session(self.engine) as session:
+            user = session.exec(
+                select(User).where(User.username == username)
+            ).one_or_none()
+            if user is None:
+                logger.debug("Tried to get user for unknown username")
+                raise UserNotFoundError("Unknown User")
+            return user
+
+    def remove_user(self, user: User):
+        with Session(self.engine) as session:
+            session.delete(user)
+            session.commit()
+
+    def change_password(self, username: str, new_password: str):
+        with Session(self.engine) as session:
+            user = session.exec(
+                select(User).where(User.username == username)
+            ).one_or_none()
+            if user is None:
+                logger.debug("Tried to change pw for unknown username")
+                raise UserNotFoundError("Unknown User")
+            user.update_password(new_password)
             session.add(user)
             session.commit()
 

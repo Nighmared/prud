@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from confloader import Config
 
@@ -11,6 +11,8 @@ class PrudConfig(Config):
     feed_request_timeout: int = 15
     webhook_url: str = ""  # VALUE REQUIRED
     alembic: Literal["local", ""] = ""
+    admin_username: Optional[str] = None
+    admin_pw: Optional[str] = None
 
     feed_sync_interval_s: int = 21_600  # should be 6 hrs?
     post_sync_interval_s: int = 300  # 5 minutes?

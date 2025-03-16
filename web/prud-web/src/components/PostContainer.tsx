@@ -1,12 +1,19 @@
-import { Divider, ListItem, ListItemText, Typography } from "@mui/material";
-import { Post, Session, deletePost, isAdmin } from "@/util/prud";
+import { Divider, Typography } from "@mui/material";
+import { Post, deletePost } from "@/util/prud";
+
+import { useRouter } from "next/router";
 
 interface Props {
   post: Post;
-  session?: Session;
+  userIsAdmin: boolean;
+  reloadPostsCallback: () => void;
 }
 
-const PostContainer: React.FC<Props> = ({ post, session }) => {
+const PostContainer: React.FC<Props> = ({
+  post,
+  userIsAdmin,
+  reloadPostsCallback,
+}) => {
   const published_txt = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
@@ -14,6 +21,12 @@ const PostContainer: React.FC<Props> = ({ post, session }) => {
     hour: "2-digit",
     minute: "2-digit",
   }).format(post.published * 1000);
+
+  const doDelete = (postId: number) => {
+    deletePost(postId);
+    reloadPostsCallback();
+  };
+
   const linkWithHttpEnsured = post.link.startsWith("http")
     ? post.link
     : `https://${post.link}`;
@@ -21,7 +34,7 @@ const PostContainer: React.FC<Props> = ({ post, session }) => {
     <>
       <div>
         <div className="flex flex-row gap-2">
-          <div>
+          <div className="flex w-full">
             <a
               className="hover:underline"
               href={linkWithHttpEnsured}
@@ -35,9 +48,9 @@ const PostContainer: React.FC<Props> = ({ post, session }) => {
               </Typography>
             </a>
           </div>
-          <div>
-            <button onClick={() => deletePost(post.id, session)}>
-              {isAdmin(session) ? "❌" : ""}
+          <div className="flex w-min right-0">
+            <button onClick={() => doDelete(post.id)}>
+              {userIsAdmin ? "❌" : ""}
             </button>
           </div>
         </div>

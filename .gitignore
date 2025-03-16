@@ -10,3 +10,4 @@ webhook.txt
 .env
 */__pycache__/*
 .venv
+tmpdata/*

@@ -1,5 +1,9 @@
 services:
   prud-core:
+    profiles:
+      - webdev
+      - all
+      - core
     build:
       context: .
       dockerfile: core/Dockerfile
@@ -8,14 +12,20 @@ services:
       - PRUD_ENV=dev
       - PRUD_OLDEST_POST_TO_SEND_TS=${OLDEST_POST:-1706811615581}
       - PRUD_DEBUG_LOGGING=true
-      # - PRUD_MAIN_LOOP_INTERVAL_S=1
+      - PRUD_MAIN_LOOP_INTERVAL_S=1
       # - PRUD_RECOVER_BACKOFF_INTERVAL_S=3
-      # - PRUD_POST_SYNC_INTERVAL_S=2
+      - PRUD_POST_SYNC_INTERVAL_S=5
       # - PRUD_FEED_REENABLE_INTERVAL_S=5
       # - PRUD_FEED_DISABLE_BACKOFF_STEP_S=2
+      - PRUD_ADMIN_USERNAME=test
+      - PRUD_ADMIN_PW=secure
     volumes:
-      - prud_data:/data
+      - ./tmpdata:/data
   prud-api:
+    profiles:
+      - webdev
+      - all
+      - api
     build:
       context: .
       dockerfile: web/api/Dockerfile
@@ -24,15 +34,20 @@ services:
     restart: unless-stopped
     environment:
       - API_ENV=dev
-      - JWT_SECRET=verysecret
+      - API_JWT_SECRET=verysecret
     volumes:
-      - prud_data:/data
+      - ./tmpdata:/data
   prud-web:
+    profiles:
+      - all
     restart: unless-stopped
     build:
       context: web/prud-web
     ports:
       - 8802:3000
+    depends_on:
+      - prud-api
+      - prud-core
 
 volumes:
   prud_data:
