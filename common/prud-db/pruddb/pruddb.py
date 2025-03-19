@@ -8,7 +8,7 @@ from typing import Optional, Sequence
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
 from loguru import logger
-from pruddb.exceptions import UserNotFoundError
+from pruddb.exceptions import FeedNotFoundError, UserNotFoundError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 
@@ -85,6 +85,8 @@ class User(SQLModel, table=True):
             pass_match = ph.verify(self.argon2_hash, password)
         except VerificationError:
             return False
+        if pass_match and ph.check_needs_rehash(self.argon2_hash):
+            self.update_password(password)
         return pass_match
 
     def update_password(self, password: str):
@@ -103,6 +105,22 @@ class PrudDbConnection:
         """ "add feed to the db"""
         with Session(self.engine) as session:
             session.add(feed)
+            session.commit()
+
+    def delete_feed(self, feed_id: int):
+        with Session(self.engine) as session:
+            db_feed = session.exec(
+                select(PolyRingFeed).where(PolyRingFeed.id == feed_id)
+            ).one_or_none()
+            if db_feed is None:
+                logger.debug("Tried to delete non existing feed")
+                raise FeedNotFoundError("Unknown Feed")
+            posts = session.exec(
+                select(PolyRingPost).where(PolyRingPost.feed_id == db_feed.id)
+            ).all()
+            for p in posts:
+                session.delete(p)
+            session.delete(db_feed)
             session.commit()
 
     def add_feeds(self, feeds: list[PolyRingFeed]):

@@ -2,6 +2,7 @@ import { Grid, Typography } from "@mui/material";
 import { ReadPostsResponse, fetchReadPosts, isAdmin } from "@/util/prud";
 import { useEffect, useState } from "react";
 
+import Footer from "@/components/Footer";
 import PostList from "@/components/PostList";
 import TitleBar from "@/components/TitleBar";
 import { useRouter } from "next/router";
@@ -25,37 +26,38 @@ const App = () => {
     setNeedToLoadPosts(true);
   };
 
-  return (
-    postsResponse && (
-      <main>
-        <TitleBar
-          backButton={true}
-          title={postsResponse.feed.title}
-          titleLink={postsResponse.feed.url}
-        />
-        {!postsResponse.feed.enabled && (
-          <Typography
-            variant="subtitle1"
-            bgcolor={"hotpink"}
-            color={"white"}
-            align="center"
-          >
-            Feed is currently disabled because it was unreachable, so some posts
-            might be missing
-          </Typography>
-        )}
-        <Grid container spacing={1}>
-          <Grid item xs={2} />
-          <Grid item xs={8}>
-            <PostList
-              posts={postsResponse?.posts}
-              userIsAdmin={userIsAdmin}
-              reloadPostsCallback={reloadPosts}
-            />
-          </Grid>
+  return postsResponse?.feed ? (
+    <main>
+      <TitleBar
+        backButton={true}
+        title={postsResponse.feed.title}
+        titleLink={postsResponse.feed.url}
+      />
+      {!postsResponse.feed.enabled && (
+        <Typography
+          variant="subtitle1"
+          bgcolor={"hotpink"}
+          color={"white"}
+          align="center"
+        >
+          Feed is currently disabled because it was unreachable, so some posts
+          might be missing
+        </Typography>
+      )}
+      <Grid container spacing={1}>
+        <Grid item xs={2} />
+        <Grid item xs={8}>
+          <PostList
+            posts={postsResponse?.posts}
+            userIsAdmin={userIsAdmin}
+            reloadPostsCallback={reloadPosts}
+          />
         </Grid>
-      </main>
-    )
+      </Grid>
+      <Footer />
+    </main>
+  ) : (
+    <h1>Feed not Found</h1>
   );
 };
 

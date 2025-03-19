@@ -183,6 +183,47 @@ def deletePost(
         return {"info": "Not an Admin"}
 
 
+@router.delete("/feeds/{feed_id}", status_code=204)
+def deleteFeed(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    response: Response,
+    feed_id: int,
+):
+    if is_admin(token):
+        try:
+            db_connection.delete_feed(feed_id)
+            return
+        except ValueError:
+            pass
+
+    else:
+        response.status_code = 401
+        return {"info": "not an Admin"}
+
+
+class FeedUpdate(BaseModel):
+    enabled: Optional[bool] = None
+
+
+@router.patch("/feeds/{feed_id}", status_code=204)
+def update_feed(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    response: Response,
+    feed_id: int,
+    update: FeedUpdate,
+):
+    if not is_admin(token):
+        response.status_code = 401
+        return {"info": "not an Admin"}
+
+    if update.enabled is not None:
+        feed = db_connection.get_feed_from_id(feed_id)
+        if update.enabled:
+            db_connection.enable_feed(feed)
+        else:
+            db_connection.disable_feed(feed)
+
+
 @router.get("/status")
 def status():
     return {"status": "okay"}

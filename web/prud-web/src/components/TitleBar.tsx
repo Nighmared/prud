@@ -1,6 +1,6 @@
 import "@/assets/tailwind.css";
 
-import { isAuthed, logout } from "@/util/prud";
+import { getLoginState, isAdmin, isAuthed, logout } from "@/util/prud";
 import { useEffect, useState } from "react";
 
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
@@ -47,15 +47,22 @@ const TitleBar: React.FC<Props> = ({
           {title}
         </a>
       </div>
-      <div className="flex w-1/6 items-center justify-center   right-0">
+      <div className="flex w-1/6 items-center justify-end pr-5   right-0">
         {showLogout && (
-          <Button
-            type="button"
-            className="border-solid rounded-xl border-3 bg-white bg-opacity-100 hover:bg-gray-300"
-            onClick={doLogout}
-          >
-            Logout
-          </Button>
+          <>
+            <div className="pr-5 flex flex-col text-center">
+              <span>{getLoginState()?.username}</span>
+              <span>{getLoginState()?.email}</span>
+              <span>Role: {getLoginState()?.role}</span>
+            </div>
+            <Button
+              type="button"
+              className="border-solid rounded-xl border-3 p-l-5 p-r-5 bg-white bg-opacity-100 hover:bg-gray-300"
+              onClick={doLogout}
+            >
+              Logout
+            </Button>
+          </>
         )}
       </div>
     </div>

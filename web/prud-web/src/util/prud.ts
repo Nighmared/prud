@@ -68,7 +68,7 @@ export function getLoginURL(): URL {
 
 async function fetchApiBodyMethod<ResponseType>(
   url: string,
-  method: "POST" | "GET" | "DELETE",
+  method: "POST" | "GET" | "DELETE" | "PATCH",
   headers: Headers,
   body?: string
 ): Promise<Response> {
@@ -81,7 +81,7 @@ async function fetchApiBodyMethod<ResponseType>(
 }
 async function fetchApiBodyMethodParse<ResponseType>(
   url: string,
-  method: "POST" | "GET" | "DELETE",
+  method: "POST" | "GET" | "DELETE" | "PATCH",
   headers: Headers,
   body?: string
 ): Promise<ResponseType> {
@@ -178,6 +178,45 @@ export async function deletePost(postId: number) {
   });
 
   await fetchApiBodyMethod(baseUrl + postId, "DELETE", headers);
+}
+
+export async function deleteFeed(
+  feedId: number,
+  refreshFeedsCallback: () => void
+) {
+  const baseUrl = document.location.host.includes("localhost")
+    ? "http://localhost:8801/api/feeds/"
+    : "/api/feeds/";
+
+  const headers = new Headers({
+    Authorization: "Bearer " + getLoginState()?.token,
+  });
+
+  await fetchApiBodyMethod(
+    baseUrl + feedId,
+    "DELETE",
+    headers,
+    JSON.stringify({})
+  );
+  refreshFeedsCallback();
+}
+
+export async function enableFeed(feedId: number) {
+  const baseUrl = document.location.host.includes("localhost")
+    ? "http://localhost:8801/api/feeds/"
+    : "/api/feeds/";
+
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    Authorization: "Bearer " + getLoginState()?.token,
+  });
+
+  await fetchApiBodyMethod(
+    baseUrl + feedId,
+    "PATCH",
+    headers,
+    JSON.stringify({ enabled: "true" })
+  );
 }
 
 export function isAuthed(): boolean {
