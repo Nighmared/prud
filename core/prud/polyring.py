@@ -2,10 +2,11 @@ import loguru
 import pruddb
 import requests
 import validators
-from prud import feedutil
 from prud.config import config
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
+
+from prud import feedutil
 
 logger = loguru.logger
 
@@ -99,4 +100,5 @@ def _get_new_feed_posts(
         if guid_to_db_post.get(post.guid) is None:
             new_posts.append(post)
 
+    return new_posts
     return new_posts

@@ -1,7 +1,7 @@
 """Module to handle all communication between
 the prud services and the db"""
 
-from enum import Enum, auto
+from enum import Enum
 from time import time
 from typing import Optional, Sequence
 
@@ -20,8 +20,9 @@ FALLBACK_BACKOFF_STEPS = 3600  # 1h
 
 
 class Role(Enum):
-    DEFAULT = auto()
-    ADMIN = auto()
+    DEFAULT = 10
+    ADMIN = 20
+    ROOT = 30
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -86,6 +87,7 @@ class User(SQLModel, table=True):
         except VerificationError:
             return False
         if pass_match and ph.check_needs_rehash(self.argon2_hash):
+            logger.info("Rehashing password")
             self.update_password(password)
         return pass_match
 
@@ -289,12 +291,10 @@ class PrudDbConnection:
 
     def get_feeds(self, only_enabled=False) -> Sequence[PolyRingFeed]:
         with Session(self.engine) as session:
+            query = select(PolyRingFeed)
             if only_enabled:
-                feeds = session.exec(
-                    select(PolyRingFeed).where(PolyRingFeed.enabled)
-                ).all()
-            else:
-                feeds = session.exec(select(PolyRingFeed)).all()
+                query = query.where(PolyRingFeed.enabled)
+            feeds = session.exec(query.order_by(PolyRingFeed.title)).all()
             return feeds
 
     def get_disabled_feeds(self) -> Sequence[PolyRingFeed]:

@@ -31,14 +31,22 @@ db_connection = pruddb.PrudDbConnection(config.db_url)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
 
 
-def is_admin(token: str) -> bool:
+def check_auth(token: str, min_role: pruddb.Role):
     token_dec = jwt.decode(token, config.jwt_secret, algorithms=["HS256"])
     token_role = token_dec["role"]
     expires = dt.datetime.strptime(token_dec["expires"], "%a, %d %b %Y %H:%M:%S UTC")
     if expires < dt.datetime.now():
         # token has expired
         return False
-    return pruddb.Role[token_role] == pruddb.Role.ADMIN
+    return pruddb.Role[token_role].value >= min_role.value
+
+
+def is_admin(token: str) -> bool:
+    return check_auth(token, pruddb.Role.ADMIN)
+
+
+def is_root(token: str) -> bool:
+    return check_auth(token, pruddb.Role.ROOT)
 
 
 class PolyRingFeedData(BaseModel):
@@ -153,7 +161,7 @@ def create_user(
     response: Response,
     user_data: UserCreateRequest,
 ):
-    if is_admin(token):
+    if is_root(token):
         new_user = pruddb.User.from_plaintext_pw(
             username=user_data.username,
             password=user_data.password,

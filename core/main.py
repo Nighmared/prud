@@ -82,7 +82,7 @@ def ensure_admin_acc(db_connection: pruddb.PrudDbConnection):
                 username=config.admin_username,
                 password=config.admin_pw,
                 email="admin@local.org",
-                role=pruddb.Role.ADMIN,
+                role=pruddb.Role.ROOT,
             )
             db_connection.add_user(new_user)
 

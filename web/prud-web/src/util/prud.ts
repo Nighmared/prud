@@ -1,10 +1,15 @@
 import { NextRouter } from "next/router";
 import { jwtDecode } from "jwt-decode";
 
+enum UserRole {
+  DEFAULT = 10,
+  ADMIN = 20,
+  ROOT = 30,
+}
 type TokenValues = {
   username: string;
   email: string;
-  role: "ADMIN" | "DEFAULT";
+  role: UserRole;
   expires: Date;
 };
 
@@ -49,10 +54,6 @@ type LoginRequest = {
   username: string;
   password: string;
   grant_type: string;
-};
-
-type DeletePostResponse = {
-  info: string;
 };
 
 export type Session = {
@@ -223,9 +224,17 @@ export function isAuthed(): boolean {
   return !!getLoginState();
 }
 
-export function isAdmin(): boolean {
+function checkAuth(minRole: UserRole): boolean {
   const state = getLoginState();
-  return !!state && state.role == "ADMIN";
+  return !!state && Number(UserRole[state.role]) >= minRole;
+}
+
+export function isAdmin(): boolean {
+  return checkAuth(UserRole.ADMIN);
+}
+
+export function isRoot(): boolean {
+  return checkAuth(UserRole.ROOT);
 }
 
 export function getLoginState(): LoginState | undefined {

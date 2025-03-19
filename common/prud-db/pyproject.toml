@@ -2,7 +2,7 @@
 name = "pruddb"
 description = "Simple Library used by prud microservices to interact with the central database"
 authors = [{ name = "nighmared", email = "joniii@ethz.wtf" }]
-version = "1.0.2"
+version = "1.0.3"
 requires-python = ">=3.10"
 dependencies = ["argon2-cffi==23.1.*", "sqlmodel", "loguru"]
 
