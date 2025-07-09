@@ -101,4 +101,3 @@ def _get_new_feed_posts(
             new_posts.append(post)
 
     return new_posts
-    return new_posts
