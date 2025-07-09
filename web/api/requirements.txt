@@ -1,3 +1,5 @@
+python-multipart
+pyjwt[crypto]==2.10.*
 fastapi==0.116.0
 uvicorn==0.34.2
 loguru==0.7.3

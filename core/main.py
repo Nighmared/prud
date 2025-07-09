@@ -6,6 +6,7 @@ import pruddb
 from loguru import logger
 from prud.config import config
 from prud.looputil import LoopManager
+from pruddb.exceptions import UserNotFoundError
 
 from prud import discord, feedutil, polyring
 
@@ -59,9 +60,35 @@ loop_config: list[tuple[int, Callable[[pruddb.PrudDbConnection], None]]] = [
 ]
 
 
+def ensure_admin_acc(db_connection: pruddb.PrudDbConnection):
+    if config.admin_username is None or config.admin_pw is None:
+        logger.info("Not ensuring an admin account exist. No Credentials were set")
+        return  # nothing to do
+    else:
+        logger.info(f"Admin Credentials received: [Username: {config.admin_username}]")
+        try:
+            existing_user = db_connection.get_user_from_username(config.admin_username)
+            password_match = existing_user.verify(config.admin_pw)
+            if password_match:
+                logger.info("User already exists")
+            else:
+                logger.info(
+                    "User already exists but with different password. Updating..."
+                )
+                db_connection.change_password(config.admin_username, config.admin_pw)
+        except UserNotFoundError:
+            logger.info("Creating new User")
+            new_user = pruddb.User.from_plaintext_pw(
+                username=config.admin_username,
+                password=config.admin_pw,
+                email="admin@local.org",
+                role=pruddb.Role.ROOT,
+            )
+            db_connection.add_user(new_user)
+
+
 def main():
     db_connection = pruddb.PrudDbConnection(db_url=config.db_url)
-
     # run migrations
     alembic_args: list[str] = []
     if config.alembic == "local":
@@ -75,6 +102,8 @@ def main():
     )
     logger.info("Applying DB Migrations")
     alembic.config.main(argv=alembic_args)
+
+    ensure_admin_acc(db_connection)
 
     loop_manager = LoopManager(db_connection=db_connection)
     loop_manager.import_config(loop_config)

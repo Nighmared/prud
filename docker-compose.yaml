@@ -1,4 +1,3 @@
-version: "3.3"
 services:
   prud-core:
     image: nighmared/prud-core
