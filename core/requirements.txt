@@ -2,7 +2,7 @@ sqlmodel==0.0.24
 feedparser==6.0.*
 loguru==0.7.*
 python-dateutil==2.9.0.post0
-requests==2.32.4
+requests==2.32.5
 alembic==1.16.3
 validators==0.35.*
 pydantic==2.*
