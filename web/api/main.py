@@ -94,7 +94,4 @@ def read_posts(feed_id: int):
 def status():
     return {"status": "okay"}
 
-if config.env == "dev":
-	app.include_router(router, prefix="/api")
-else:
-	app.include_router(router,prefix="")
+app.include_router(router, prefix="/api")
