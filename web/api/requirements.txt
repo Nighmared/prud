@@ -1,7 +1,7 @@
 python-multipart
 pyjwt[crypto]==2.10.*
 fastapi==0.123.0
-uvicorn==0.34.2
+uvicorn==0.38.0
 loguru==0.7.3
 sqlmodel==0.0.27
 pydantic==2.*
