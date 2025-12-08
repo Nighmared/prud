@@ -12,3 +12,4 @@ webhook.txt
 **/__pycache__
 .venv
 tmpdata/*
+**/_pycache__
