@@ -5,19 +5,17 @@ import { login } from "@/util/prud";
 import { useRouter } from "next/router";
 
 const App = () => {
-  const unameRef = useRef("");
-  const pwRef = useRef("");
   const router = useRouter();
 
   const doLogin = (event: FormEvent) => {
     event.preventDefault();
-    const uname = unameRef.current;
-    const pw = pwRef.current;
-    if (!uname || !pw) {
-      // console.log(unameRef);
+    const unameval = (document.getElementById("uname") as HTMLInputElement)
+      .value;
+    const pwval = (document.getElementById("pw") as HTMLInputElement).value;
+    if (!unameval || !pwval) {
       return;
     }
-    login(uname, pw, router);
+    login(unameval, pwval, router);
   };
   return (
     <main>
@@ -26,18 +24,18 @@ const App = () => {
           <div>
             <form autoComplete="off" onSubmit={doLogin}>
               <TextField
+                id="uname"
                 type="text"
                 required
                 label="Username"
                 name="username"
-                inputRef={unameRef}
               ></TextField>
               <TextField
+                id="pw"
                 type="password"
                 required
                 label="Password"
                 name="password"
-                inputRef={pwRef}
               ></TextField>
               <Button type="submit">Login</Button>
             </form>

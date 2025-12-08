@@ -142,7 +142,7 @@ class PrudDbConnection:
                 select(User).where(User.username == username)
             ).one_or_none()
             if user is None:
-                logger.debug("Tried to get user for unknown username")
+                logger.debug(f"Tried to get user for unknown username {username}")
                 raise UserNotFoundError("Unknown User")
             return user
 
