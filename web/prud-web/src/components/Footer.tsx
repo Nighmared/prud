@@ -12,7 +12,7 @@ const Footer: React.FC<Props> = (props) => {
   useEffect(() => {
     if (!router.isReady) return;
     setShowLogin(!isAuthed());
-  });
+  }, [router.isReady]);
   return (
     <>
       {showLogin && (
