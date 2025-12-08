@@ -1,17 +1,28 @@
 """Module to handle all communication between
 the prud services and the db"""
 
+from enum import Enum
 from time import time
 from typing import Optional, Sequence
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerificationError
 from loguru import logger
+from pruddb.exceptions import FeedNotFoundError, UserNotFoundError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import Field, Session, SQLModel, create_engine, desc, select
 
 Base = declarative_base
+ph = PasswordHasher()
 
 
 FALLBACK_BACKOFF_STEPS = 3600  # 1h
+
+
+class Role(Enum):
+    DEFAULT = 10
+    ADMIN = 20
+    ROOT = 30
 
 
 class PolyRingFeed(SQLModel, table=True):
@@ -51,6 +62,39 @@ class PolyRingPost(SQLModel, table=True):
     sent: Optional[bool] = False
 
 
+class User(SQLModel, table=True):
+    """DB table to store users"""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(unique=True)
+    email: str
+    argon2_hash: str
+    role: Role = Field(default=Role.DEFAULT, nullable=False)
+
+    @staticmethod
+    def from_plaintext_pw(
+        username: str, password: str, email: str, role: Role = Role.DEFAULT
+    ) -> "User":
+        argon2_hash = ph.hash(password)
+        new_user = User(
+            username=username, email=email, argon2_hash=argon2_hash, role=role
+        )
+        return new_user
+
+    def verify(self, password: str) -> bool:
+        try:
+            pass_match = ph.verify(self.argon2_hash, password)
+        except VerificationError:
+            return False
+        if pass_match and ph.check_needs_rehash(self.argon2_hash):
+            logger.info("Rehashing password")
+            self.update_password(password)
+        return pass_match
+
+    def update_password(self, password: str):
+        self.argon2_hash = ph.hash(password)
+
+
 class PrudDbConnection:
     """The class that provides methods for all
     required interactions with the db"""
@@ -65,10 +109,58 @@ class PrudDbConnection:
             session.add(feed)
             session.commit()
 
+    def delete_feed(self, feed_id: int):
+        with Session(self.engine) as session:
+            db_feed = session.exec(
+                select(PolyRingFeed).where(PolyRingFeed.id == feed_id)
+            ).one_or_none()
+            if db_feed is None:
+                logger.debug("Tried to delete non existing feed")
+                raise FeedNotFoundError("Unknown Feed")
+            posts = session.exec(
+                select(PolyRingPost).where(PolyRingPost.feed_id == db_feed.id)
+            ).all()
+            for p in posts:
+                session.delete(p)
+            session.delete(db_feed)
+            session.commit()
+
     def add_feeds(self, feeds: list[PolyRingFeed]):
         """Add multiple feeds to the db in a batch"""
         with Session(self.engine) as session:
             session.add_all(feeds)
+            session.commit()
+
+    def add_user(self, user: User):
+        with Session(self.engine) as session:
+            session.add(user)
+            session.commit()
+
+    def get_user_from_username(self, username: str) -> User:
+        with Session(self.engine) as session:
+            user = session.exec(
+                select(User).where(User.username == username)
+            ).one_or_none()
+            if user is None:
+                logger.debug("Tried to get user for unknown username")
+                raise UserNotFoundError("Unknown User")
+            return user
+
+    def remove_user(self, user: User):
+        with Session(self.engine) as session:
+            session.delete(user)
+            session.commit()
+
+    def change_password(self, username: str, new_password: str):
+        with Session(self.engine) as session:
+            user = session.exec(
+                select(User).where(User.username == username)
+            ).one_or_none()
+            if user is None:
+                logger.debug("Tried to change pw for unknown username")
+                raise UserNotFoundError("Unknown User")
+            user.update_password(new_password)
+            session.add(user)
             session.commit()
 
     def get_feed_from_id(self, feed_id: int) -> PolyRingFeed:
@@ -93,6 +185,22 @@ class PrudDbConnection:
             session.expire_on_commit = False
             session.add_all(posts)
             session.commit()
+
+    def delete_post(self, post: PolyRingPost):
+        with Session(self.engine) as session:
+            session.delete(post)
+            session.commit()
+
+    def get_post_from_id(self, post_id: int) -> PolyRingPost:
+        with Session(self.engine) as session:
+            post = session.exec(
+                select(PolyRingPost).where(PolyRingPost.id == post_id)
+            ).one_or_none()
+
+            if post is None:
+                logger.critical(f"Post for id {post_id} not found.")
+                raise ValueError("invalid post id")
+            return post
 
     def tag_post_sent(self, post: PolyRingPost):
         with Session(self.engine) as session:
@@ -183,12 +291,10 @@ class PrudDbConnection:
 
     def get_feeds(self, only_enabled=False) -> Sequence[PolyRingFeed]:
         with Session(self.engine) as session:
+            query = select(PolyRingFeed)
             if only_enabled:
-                feeds = session.exec(
-                    select(PolyRingFeed).where(PolyRingFeed.enabled)
-                ).all()
-            else:
-                feeds = session.exec(select(PolyRingFeed)).all()
+                query = query.where(PolyRingFeed.enabled)
+            feeds = session.exec(query.order_by(PolyRingFeed.title)).all()
             return feeds
 
     def get_disabled_feeds(self) -> Sequence[PolyRingFeed]:

@@ -2,10 +2,11 @@ import loguru
 import pruddb
 import requests
 import validators
-from prud import feedutil
 from prud.config import config
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
+
+from prud import feedutil
 
 logger = loguru.logger
 

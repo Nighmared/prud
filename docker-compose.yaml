@@ -1,4 +1,3 @@
-version: "3.3"
 services:
   prud-core:
     image: nighmared/prud-core
@@ -6,6 +5,8 @@ services:
     environment:
       - PRUD_WEBHOOK_URL=${WEBHOOK_URL}
       - PRUD_OLDEST_POST_TO_SEND_TS=${OLDEST_POST:-1706866445}
+      - PRUD_ADMIN_USERNAME=${PRUD_ADMIN_USERNAME}
+      - PRUD_ADMIN_PW=${PRUD_ADMIN_PW}
     volumes:
       - prud_data:/data
   prud-api:

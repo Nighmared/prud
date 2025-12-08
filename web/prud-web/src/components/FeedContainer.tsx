@@ -1,10 +1,5 @@
 import {
-  CancelOutlined,
-  CheckCircleOutline,
-  LanguageOutlined,
-  RssFeedOutlined,
-} from "@mui/icons-material";
-import {
+  Button,
   Divider,
   ListItem,
   ListItemButton,
@@ -12,13 +7,20 @@ import {
   ListItemText,
   Tooltip,
 } from "@mui/material";
+import {
+  CancelOutlined,
+  CheckCircleOutline,
+  LanguageOutlined,
+  PublishedWithChangesOutlined,
+  RssFeedOutlined,
+} from "@mui/icons-material";
+import { useEffect, useState } from "react";
 
+import ConfirmField from "@/components/ConfirmField";
+import EnableFeedButton from "./EnableFeedButton";
 import { Feed } from "@/util/prud";
 import Link from "next/link";
-
-interface props {
-  feed: Feed;
-}
+import { useRouter } from "next/router";
 
 const numberToString = (num: number) => {
   const twodigit = num % 100;
@@ -38,7 +40,17 @@ const numberToString = (num: number) => {
   return num + "th";
 };
 
-const FeedContainer: React.FC<props> = ({ feed }) => {
+interface props {
+  feed: Feed;
+  userIsAdmin: boolean;
+  refreshFeedsCallback: () => void;
+}
+
+const FeedContainer: React.FC<props> = ({
+  feed,
+  userIsAdmin,
+  refreshFeedsCallback,
+}) => {
   var suffix_string = "Disabled";
   if (!!feed.disabled_until) {
     // add half an hour because core isn't constantly checking and enabling
@@ -65,10 +77,26 @@ const FeedContainer: React.FC<props> = ({ feed }) => {
       year +
       " ";
   }
-  console.log(suffix_string);
+
+  const [showDeleteBox, setShowDeleteBox] = useState(false);
+
+  const wrappedCallback = () => {
+    setShowDeleteBox(false);
+    refreshFeedsCallback();
+  };
+
+  const router = useRouter();
+
+  // console.log(suffix_string);
   return (
     <>
       <ListItem>
+        {userIsAdmin && !feed.enabled && (
+          <EnableFeedButton
+            feedId={feed.id as number}
+            refreshFeedsCallback={refreshFeedsCallback}
+          />
+        )}
         <Tooltip title={feed.enabled ? "Enabled" : suffix_string}>
           <ListItemIcon>
             {feed.enabled ? (
@@ -103,6 +131,25 @@ const FeedContainer: React.FC<props> = ({ feed }) => {
             </a>
           </ListItemIcon>
         </Tooltip>
+        <div className="min-w-50 flex flex-row">
+          {showDeleteBox && (
+            <ConfirmField
+              feedId={feed.id}
+              refreshFeedsCallback={wrappedCallback}
+            />
+          )}
+          {userIsAdmin && (
+            <Tooltip title="Delete Feed">
+              <Button
+                onClick={() => {
+                  setShowDeleteBox(!showDeleteBox);
+                }}
+              >
+                {showDeleteBox ? "⬅️" : "❌"}
+              </Button>
+            </Tooltip>
+          )}
+        </div>
       </ListItem>
       <Divider />
     </>
