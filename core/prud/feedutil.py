@@ -57,6 +57,8 @@ def posts_from_feed(feed: pruddb.PolyRingFeed) -> list[pruddb.PolyRingPost]:
         raise ConnectionError("Timed out") from exc
     except requests.exceptions.ConnectionError as exc:
         raise ConnectionError("ConnectionError") from exc
+    except requests.TooManyRedirects as exc:
+        raise ConnectionError("Too many redirects") from exc
     parsed: FeedParserDict = feedparser.parse(response.content)
     raw_posts = parsed.entries
     posts = [_raw_post_to_object(p, feed.id) for p in raw_posts]
