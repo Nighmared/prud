@@ -64,7 +64,8 @@ export function getLoginURL(): URL {
   if (document.location.host.includes("localhost")) {
     return new URL("http://localhost:8801/api/login");
   }
-  return new URL("/api/login");
+  const login_url = "https://" + document.location.hostname + "/api/login";
+  return new URL(login_url);
 }
 
 async function fetchApiBodyMethod<ResponseType>(
