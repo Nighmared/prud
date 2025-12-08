@@ -242,4 +242,5 @@ def test_login(token: Annotated[str, Depends(oauth2_scheme)]):
     return jwt.decode(token, config.jwt_secret, algorithms=["HS256"])
 
 
+app.include_router(router)
 app.include_router(router, prefix="/api")
