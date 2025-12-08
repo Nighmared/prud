@@ -11,8 +11,8 @@ const App = () => {
 
   const doLogin = (event: FormEvent) => {
     event.preventDefault();
-    const uname = unameRef.current.value;
-    const pw = pwRef.current.value;
+    const uname = unameRef.current;
+    const pw = pwRef.current;
     if (!uname || !pw) {
       // console.log(unameRef);
       return;
