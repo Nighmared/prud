@@ -1,5 +1,5 @@
 
-sqlmodel==0.0.24
+sqlmodel==0.0.32
 feedparser==6.0.*
 loguru==0.7.*
 python-dateutil==2.9.0.post0
