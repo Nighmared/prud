@@ -8,12 +8,12 @@ updates:
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/core" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/web/api" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/web/prud-web" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "monthly"
