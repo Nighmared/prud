@@ -1,9 +1,10 @@
-import { Feed, LoginState, readFeeds } from "@/util/prud";
+import { Feed, readFeeds } from "@/util/prud";
 import { useEffect, useState } from "react";
 
 import { Container } from "@mui/material";
 import FeedList from "@/components/FeedList";
 import Footer from "@/components/Footer";
+import React from "react";
 import TitleBar from "@/components/TitleBar";
 
 const App = () => {

@@ -18,7 +18,7 @@ export type LoginState = TokenValues & {
 };
 
 export type Feed = {
-  id: Number;
+  id: number;
   title: string;
   url: string;
   feed: string;
@@ -68,14 +68,14 @@ export function getLoginURL(): URL {
   return new URL(login_url);
 }
 
-async function fetchApiBodyMethod<ResponseType>(
+async function fetchApiBodyMethod(
   url: string,
   method: "POST" | "GET" | "DELETE" | "PATCH",
   headers: Headers,
   body?: string
 ): Promise<Response> {
   const rqInit: RequestInit = { method: method, headers: headers };
-  if (!!body) {
+  if (body) {
     rqInit.body = body;
   }
   const response = fetch(url, rqInit);
@@ -103,7 +103,7 @@ async function postApi<ResponseType>(
   return fetchApiBodyMethodParse<ResponseType>(url, "POST", headers, body);
 }
 
-export async function readFeeds(setFeeds: Function) {
+export async function readFeeds(setFeeds: (feeds: Feed[]) => void) {
   //XXX hack for debugging...
   if (document.location.host.includes("localhost")) {
     const result = await fetchApi<ReadFeedsResponse>(
@@ -117,7 +117,10 @@ export async function readFeeds(setFeeds: Function) {
   }
 }
 
-export async function fetchReadPosts(feed_id: Number, setResult: Function) {
+export async function fetchReadPosts(
+  feed_id: number,
+  setResult: (result: ReadPostsResponse) => void
+) {
   //XXX hack for debugging...
   if (document.location.host.includes("localhost")) {
     const result = await fetchApi<ReadPostsResponse>(
@@ -152,12 +155,10 @@ export async function login(
     headers
   );
 
-  if (!!result.error) {
+  if (result.error) {
     console.log("bad login");
     return;
   }
-
-  const decoded = jwtDecode<TokenValues>(result.access_token);
 
   document.cookie =
     "token=" + result.access_token + "; expires=" + result.expiry;
@@ -240,7 +241,7 @@ export function isRoot(): boolean {
 
 export function getLoginState(): LoginState | undefined {
   const token = window.sessionStorage.getItem("token");
-  if (!!!token) {
+  if (!token) {
     return undefined;
   }
   const decoded = jwtDecode<TokenValues>(token);

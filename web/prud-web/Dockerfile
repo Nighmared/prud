@@ -10,12 +10,13 @@ WORKDIR /app
 COPY package.json  package-lock.json* ./
 RUN npm ci
 
-
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+RUN cd src && npx eslint
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

@@ -1,6 +1,7 @@
 import { Button, Tooltip } from "@mui/material";
 
 import { PublishedWithChangesOutlined } from "@mui/icons-material";
+import React from "react";
 import { enableFeed } from "@/util/prud";
 
 interface Props {

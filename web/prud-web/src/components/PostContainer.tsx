@@ -1,7 +1,7 @@
 import { Divider, Typography } from "@mui/material";
 import { Post, deletePost } from "@/util/prud";
 
-import { useRouter } from "next/router";
+import React from "react";
 
 interface Props {
   post: Post;

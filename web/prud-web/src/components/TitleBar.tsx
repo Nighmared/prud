@@ -1,11 +1,12 @@
 import "@/assets/tailwind.css";
 
-import { getLoginState, isAdmin, isAuthed, logout } from "@/util/prud";
+import { getLoginState, isAuthed, logout } from "@/util/prud";
 import { useEffect, useState } from "react";
 
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/outline";
 import { Button } from "@mui/material";
 import Link from "next/link";
+import React from "react";
 import { useRouter } from "next/router";
 
 interface Props {
@@ -43,6 +44,7 @@ const TitleBar: React.FC<Props> = ({
           className="flex items-center"
           href={titleLink}
           target={titleLink == "/" ? "" : "_blank"}
+          rel="noreferrer"
         >
           {title}
         </a>

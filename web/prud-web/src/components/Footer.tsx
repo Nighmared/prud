@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import React from "react";
 import { isAuthed } from "@/util/prud";
 import { useRouter } from "next/router";
 
-interface Props {}
-
-const Footer: React.FC<Props> = (props) => {
+const Footer: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const router = useRouter();
   useEffect(() => {

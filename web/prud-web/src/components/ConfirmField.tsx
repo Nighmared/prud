@@ -1,10 +1,11 @@
 import { Button, Tooltip } from "@mui/material";
 
+import React from "react";
 import { deleteFeed } from "@/util/prud";
 
 interface Props {
   refreshFeedsCallback: () => void;
-  feedId: Number;
+  feedId: number;
 }
 
 const doDeleteFeed = (id: number, refreshCallback: () => void) => {

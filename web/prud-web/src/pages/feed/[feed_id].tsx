@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import Footer from "@/components/Footer";
 import PostList from "@/components/PostList";
+import React from "react";
 import TitleBar from "@/components/TitleBar";
 import { useRouter } from "next/router";
 

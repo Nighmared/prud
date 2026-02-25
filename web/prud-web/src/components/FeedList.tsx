@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import FeedContainer from "./FeedContainer";
 import { List } from "@mui/material";
+import React from "react";
 import { useRouter } from "next/router";
 
 interface Props {

@@ -1,6 +1,7 @@
 import { List } from "@mui/material";
 import { Post } from "@/util/prud";
 import PostContainer from "./PostContainer";
+import React from "react";
 
 interface Props {
   posts: Post[];

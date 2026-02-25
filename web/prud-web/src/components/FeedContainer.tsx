@@ -11,16 +11,15 @@ import {
   CancelOutlined,
   CheckCircleOutline,
   LanguageOutlined,
-  PublishedWithChangesOutlined,
   RssFeedOutlined,
 } from "@mui/icons-material";
-import { useEffect, useState } from "react";
 
 import ConfirmField from "@/components/ConfirmField";
 import EnableFeedButton from "./EnableFeedButton";
 import { Feed } from "@/util/prud";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import React from "react";
+import { useState } from "react";
 
 const numberToString = (num: number) => {
   const twodigit = num % 100;
@@ -51,8 +50,8 @@ const FeedContainer: React.FC<props> = ({
   userIsAdmin,
   refreshFeedsCallback,
 }) => {
-  var suffix_string = "Disabled";
-  if (!!feed.disabled_until) {
+  let suffix_string = "Disabled";
+  if (feed.disabled_until) {
     // add half an hour because core isn't constantly checking and enabling
     // *1000 because date wants a ms timestamp and the one we have is s
     const disabled_until_date = new Date((feed.disabled_until + 1800) * 1000);
@@ -84,8 +83,6 @@ const FeedContainer: React.FC<props> = ({
     setShowDeleteBox(false);
     refreshFeedsCallback();
   };
-
-  const router = useRouter();
 
   // console.log(suffix_string);
   return (
