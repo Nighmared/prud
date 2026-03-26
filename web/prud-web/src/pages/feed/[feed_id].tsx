@@ -46,8 +46,8 @@ const App = () => {
         </Typography>
       )}
       <Grid container spacing={1}>
-        <Grid item xs={2} />
-        <Grid item xs={8}>
+        <Grid size={{ xs: 2 }} />
+        <Grid size={{ xs: 8 }}>
           <PostList
             posts={postsResponse?.posts}
             userIsAdmin={userIsAdmin}
