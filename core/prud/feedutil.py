@@ -52,7 +52,11 @@ def _raw_post_to_object(raw_post, feed_id) -> pruddb.PolyRingPost:
 
 def posts_from_feed(feed: pruddb.PolyRingFeed) -> list[pruddb.PolyRingPost]:
     try:
-        response = requests.get(feed.feed, timeout=config.feed_request_timeout)
+        response = requests.get(
+            feed.feed,
+            timeout=config.feed_request_timeout,
+            headers={"User-Agent": "prud (+https://github.com/Nighmared/prud)"},
+        )
     except requests.exceptions.Timeout as exc:
         raise ConnectionError("Timed out") from exc
     except requests.exceptions.ConnectionError as exc:
