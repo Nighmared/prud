@@ -13,7 +13,11 @@ logger = loguru.logger
 
 def get_online_feeds() -> list[pruddb.PolyRingFeed]:
     try:
-        response = requests.get(config.polyring_members_url, timeout=10)
+        response = requests.get(
+            config.polyring_members_url,
+            timeout=10,
+            headers={"User-Agent": "prud (+https://github.com/Nighmared/prud)"},
+        )
     except TimeoutError as exc:
         raise ValueError("Couldn't reach polyring website within timeout") from exc
     feeds: list[pruddb.PolyRingFeed] = []
