@@ -4,6 +4,6 @@ feedparser==6.0.*
 loguru==0.7.*
 python-dateutil==2.9.0.post0
 requests==2.34.2
-alembic==1.18.4
+alembic==1.19.1
 validators==0.35.*
 pydantic==2.*
