@@ -1,5 +1,5 @@
 python-multipart
-pyjwt[crypto]==2.13.*
+pyjwt[crypto]==2.15.*
 fastapi==0.139.2
 uvicorn==0.54.0
 loguru==0.7.3
